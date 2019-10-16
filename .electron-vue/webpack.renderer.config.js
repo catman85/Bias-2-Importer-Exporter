@@ -35,12 +35,12 @@ let rendererConfig = {
         test: /\.(js|vue)$/,
         enforce: 'pre',
         exclude: /node_modules/,
-        use: {
-          loader: 'eslint-loader',
-          options: {
-            formatter: require('eslint-friendly-formatter')
-          }
-        }
+        // use: { // ATTENTION disabled this because it was a pain in the ass
+        //   loader: 'eslint-loader',
+        //   options: {
+        //     formatter: require('eslint-friendly-formatter')
+        //   }
+        // }
       },
       {
         test: /\.scss$/,

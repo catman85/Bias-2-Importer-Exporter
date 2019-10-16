@@ -21,7 +21,7 @@ let mainConfig = {
         test: /\.(js)$/,
         enforce: 'pre',
         exclude: /node_modules/,
-        use: {
+        use: { // ATTENTION
           loader: 'eslint-loader',
           options: {
             formatter: require('eslint-friendly-formatter')

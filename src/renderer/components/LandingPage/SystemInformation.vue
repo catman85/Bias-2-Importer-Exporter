@@ -27,19 +27,62 @@
         <div class="value">{{ platform }}</div>
       </div>
     </div>
+    <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
+    <button class="alt" @click='selectFolder()'>Select Folder</button>
   </div>
 </template>
 
 <script>
+  const fs = require('fs')
+  const {
+    dialog
+  } = require('electron').remote
+
   export default {
-    data () {
+    data() {
       return {
         electron: process.versions.electron,
         name: this.$route.name,
         node: process.versions.node,
         path: this.$route.path,
         platform: require('os').platform(),
-        vue: require('vue/package.json').version
+        vue: require('vue/package.json').version,
+
+        // fs: require('fs')
+        // {dialog}:
+      }
+    },
+    methods: {
+      showSaveDialog(content) {
+        // You can obviously give a direct path without use the dialog (C:/Program Files/path/myfileexample.txt)
+        dialog.showSaveDialog((fileName) => {
+          if (fileName === undefined) {
+            console.log("You didn't save the file");
+            return;
+          }
+
+          // fileName is a string that contains the path and filename created in the save file dialog.  
+          fs.writeFile(fileName, content, (err) => {
+            if (err) {
+              alert("An error ocurred creating the file " + err.message)
+            }
+            console.debug("The file has been succesfully saved");
+          });
+        })
+      },
+      selectFolder() {
+        dialog.showOpenDialog({
+          title: "Select a folder",
+          properties: ["openDirectory"]
+        }, (folderPaths) => {
+          // folderPaths is an array that contains all the selected paths
+          if (folderPaths === undefined) {
+            console.log("No destination folder selected");
+            return;
+          } else {
+            console.log(folderPaths);
+          }
+        });
       }
     }
   }
@@ -54,7 +97,9 @@
     margin-top: 10px;
   }
 
-  .items { margin-top: 8px; }
+  .items {
+    margin-top: 8px;
+  }
 
   .item {
     display: flex;
