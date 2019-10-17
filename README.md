@@ -17,6 +17,7 @@ npm run build
 
 # lint all JS/Vue component files in `src/`
 npm run lint
+# ESlint caused problems with hot reload so I removed it
 
 ```
 

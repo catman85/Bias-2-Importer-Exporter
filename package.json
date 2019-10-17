@@ -50,6 +50,7 @@
     }
   },
   "dependencies": {
+    "jsonq": "^1.2.0",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",
     "vue-router": "^3.0.1",

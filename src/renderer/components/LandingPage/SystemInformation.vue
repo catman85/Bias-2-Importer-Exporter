@@ -37,27 +37,39 @@
 
 <script>
   import {
-  mapState,
-  mapActions
-} from 'vuex'
+    mapState,
+    mapActions
+  } from 'vuex'
 
-const fs = require('fs')
-const {
-  dialog
-} = require('electron').remote
+  const fs = require('fs')
+  const {
+    dialog
+  } = require('electron').remote
 
+  const jsonQ = require("jsonq");
   export default {
-    data () {
+    data() {
       return {
         electron: process.versions.electron,
         name: this.$route.name,
         node: process.versions.node,
         path: this.$route.path,
         platform: require('os').platform(),
-        vue: require('vue/package.json').version
+        vue: require('vue/package.json').version,
+        obj: {
+          "age": 30,
+          "name": "Angela",
+          "husband": {
+            "age": 23,
+            "name": "William"
+          }
+        }
       }
     },
-    mounted () {},
+    mounted() {
+      var jsonQobj=jsonQ(this.obj);
+      console.log(jsonQobj.find('name').value());
+    },
     computed: {
       ...mapState({
         count: state => state.Counter.main,
@@ -65,7 +77,7 @@ const {
       })
     },
     methods: {
-      showSaveDialog (content) {
+      showSaveDialog(content) {
         // You can obviously give a direct path without use the dialog (C:/Program Files/path/myfileexample.txt)
         dialog.showSaveDialog((fileName) => {
           if (fileName === undefined) {
@@ -82,22 +94,22 @@ const {
           })
         })
       },
-      selectFolder () {
+      selectFolder() {
         dialog.showOpenDialog({
           title: 'Select a folder',
           properties: ['openDirectory']
         }, (folderPaths) => {
-        // folderPaths is an array that contains all the selected paths
+          // folderPaths is an array that contains all the selected paths
           if (folderPaths === undefined) {
             console.log('No destination folder selected')
           } else {
-          // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
+            // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
             this.$store.dispatch('setDir', folderPaths[0]) // calling the async action which can't modify the state
             console.log(folderPaths)
           }
         })
       },
-      showStateStuff () {
+      showStateStuff() {
         console.debug(this.$store.state.Directory.isDirSet)
         console.debug(this.$store.state.Directory.dir)
         console.debug(this.$store.state.Counter.main)
@@ -108,8 +120,7 @@ const {
 
 <style scoped>
   .title {
-    /* color: #888; */
-    color:aqua;
+    color: #ffffff;
     font-size: 18px;
     font-weight: initial;
     letter-spacing: .25px;
