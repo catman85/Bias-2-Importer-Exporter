@@ -29,7 +29,6 @@
     </div>
     {{count}}
     {{directory}}
-    {{directory}}
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
@@ -37,18 +36,18 @@
 </template>
 
 <script>
-  const fs = require('fs')
-  const {
-    dialog
-  } = require('electron').remote
-
   import {
-    mapState,
-    mapActions
-  } from "vuex";
+  mapState,
+  mapActions
+} from 'vuex'
+
+const fs = require('fs')
+const {
+  dialog
+} = require('electron').remote
 
   export default {
-    data() {
+    data () {
       return {
         electron: process.versions.electron,
         name: this.$route.name,
@@ -58,7 +57,7 @@
         vue: require('vue/package.json').version
       }
     },
-    mounted() {},
+    mounted () {},
     computed: {
       ...mapState({
         count: state => state.Counter.main,
@@ -66,45 +65,42 @@
       })
     },
     methods: {
-      showSaveDialog(content) {
+      showSaveDialog (content) {
         // You can obviously give a direct path without use the dialog (C:/Program Files/path/myfileexample.txt)
         dialog.showSaveDialog((fileName) => {
           if (fileName === undefined) {
-            console.log("You didn't save the file");
-            return;
+            console.log("You didn't save the file")
+            return
           }
 
-          // fileName is a string that contains the path and filename created in the save file dialog.  
+          // fileName is a string that contains the path and filename created in the save file dialog.
           fs.writeFile(fileName, content, (err) => {
             if (err) {
-              alert("An error ocurred creating the file " + err.message)
+              alert('An error ocurred creating the file ' + err.message)
             }
-            console.debug("The file has been succesfully saved");
-          });
+            console.debug('The file has been succesfully saved')
+          })
         })
       },
-      selectFolder() {
+      selectFolder () {
         dialog.showOpenDialog({
-          title: "Select a folder",
-          properties: ["openDirectory"]
+          title: 'Select a folder',
+          properties: ['openDirectory']
         }, (folderPaths) => {
-          // folderPaths is an array that contains all the selected paths
+        // folderPaths is an array that contains all the selected paths
           if (folderPaths === undefined) {
-            console.log("No destination folder selected");
-            return;
+            console.log('No destination folder selected')
           } else {
-            // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
-            this.$store.dispatch('setDir', folderPaths[0]); // calling the async action which can't modify the state
-            console.log(folderPaths);
+          // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
+            this.$store.dispatch('setDir', folderPaths[0]) // calling the async action which can't modify the state
+            console.log(folderPaths)
           }
-        });
-
-
+        })
       },
-      showStateStuff() {
-        console.debug(this.$store.state.Directory.isDirSet);
-        console.debug(this.$store.state.Directory.dir);
-        console.debug(this.$store.state.Counter.main);
+      showStateStuff () {
+        console.debug(this.$store.state.Directory.isDirSet)
+        console.debug(this.$store.state.Directory.dir)
+        console.debug(this.$store.state.Counter.main)
       }
     }
   }

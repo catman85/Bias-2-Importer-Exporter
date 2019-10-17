@@ -11,21 +11,21 @@ const mutations = {
     // console.debug("trying to " + dir)
     // console.debug(state.dir)
     state.dir = dir
-    state.isDirSet = true;
-  },
+    state.isDirSet = true
+  }
 }
 
 const actions = {
-  setDir ({ commit },payload) {
+  setDir ({ commit }, payload) {
     // do something async
     // we don't have access to state from here
     // console.debug("Action payload " + payload);
-    commit('SET_DIR',{'dir':payload})
+    commit('SET_DIR', {'dir': payload})
   }
 }
 
 export default {
   state,
   actions,
-  mutations,
+  mutations
 }

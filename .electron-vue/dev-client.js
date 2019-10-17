@@ -9,9 +9,9 @@ hotClient.subscribe(event => {
    * https://github.com/jantimon/html-webpack-plugin/issues/680
    */
   // ATTENTION hot reload bug?
-  if (event.action === 'reload') {
-    window.location.reload()
-  }
+  // if (event.action === 'reload') {
+  //   window.location.reload()
+  // }
 
   /**
    * Notify `mainWindow` when `main` process is compiling,

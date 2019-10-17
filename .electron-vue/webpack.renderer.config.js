@@ -76,6 +76,7 @@ let rendererConfig = {
         use: {
           loader: 'vue-loader',
           options: {
+            hotReload: true, // ATTENTION
             extractCSS: process.env.NODE_ENV === 'production',
             loaders: {
               sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax=1',
