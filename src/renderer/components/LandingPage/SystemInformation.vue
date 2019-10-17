@@ -27,8 +27,12 @@
         <div class="value">{{ platform }}</div>
       </div>
     </div>
+    {{count}}
+    {{directory}}
+    {{directory}}
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectFolder()'>Select Folder</button>
+    <button class="alt" @click='showStateStuff()'>shot state</button>
   </div>
 </template>
 
@@ -38,6 +42,11 @@
     dialog
   } = require('electron').remote
 
+  import {
+    mapState,
+    mapActions
+  } from "vuex";
+
   export default {
     data() {
       return {
@@ -46,11 +55,15 @@
         node: process.versions.node,
         path: this.$route.path,
         platform: require('os').platform(),
-        vue: require('vue/package.json').version,
-
-        // fs: require('fs')
-        // {dialog}:
+        vue: require('vue/package.json').version
       }
+    },
+    mounted() {},
+    computed: {
+      ...mapState({
+        count: state => state.Counter.main,
+        directory: state => state.Directory.dir
+      })
     },
     methods: {
       showSaveDialog(content) {
@@ -80,9 +93,18 @@
             console.log("No destination folder selected");
             return;
           } else {
+            // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
+            this.$store.dispatch('setDir', folderPaths[0]); // calling the async action which can't modify the state
             console.log(folderPaths);
           }
         });
+
+
+      },
+      showStateStuff() {
+        console.debug(this.$store.state.Directory.isDirSet);
+        console.debug(this.$store.state.Directory.dir);
+        console.debug(this.$store.state.Counter.main);
       }
     }
   }
@@ -90,7 +112,8 @@
 
 <style scoped>
   .title {
-    color: #888;
+    /* color: #888; */
+    color:aqua;
     font-size: 18px;
     font-weight: initial;
     letter-spacing: .25px;
