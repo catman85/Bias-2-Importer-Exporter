@@ -32,7 +32,7 @@
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
-    <button class="alt" @click='listFolder()'>list</button>
+    <button class="alt" @click='listFolder(searchContents)'>list</button>
   </div>
 </template>
 
@@ -47,7 +47,11 @@
     dialog
   } = require('electron').remote
 
+  const util = require('util');
+
   const jsonQ = require("jsonq");
+
+
   export default {
     data() {
       return {
@@ -57,6 +61,7 @@
         path: this.$route.path,
         platform: require('os').platform(),
         vue: require('vue/package.json').version,
+        contents: {},
         obj: {
           "age": 30,
           "name": "Angela",
@@ -114,12 +119,56 @@
         console.debug(this.$store.state.Directory.isDirSet)
         console.debug(this.$store.state.Directory.dir)
         console.debug(this.$store.state.Counter.main)
+        console.debug(this.$store.state.Directory.contents)
       },
-      listFolder() {
-        fs.readdir(this.directory, (err, dir) => {
-          for (let filePath of dir)
-            console.log(filePath);
-        });
+      async listFolder(callback) {
+        const readdir = util.promisify(fs.readdir);
+
+        // let cons = fs.readdir(this.directory, (err, dir) => {
+        // let cons;
+        // await readdir(this.directory, (err, dir) => {
+          // for (let filePath of dir) {
+            // console.log(filePath);
+          // }
+          // cons = dir.slice();
+          // console.debug(this.contents);
+          // this.$store.dispatch('setContents', dir.slice());
+          // return dir;
+          // return contents;
+          // callback();
+        // });
+
+        try {
+          this.contents = await readdir(this.directory) // ls
+        } catch (err) {
+          console.log(err);
+        }
+        if (this.contents === undefined) {
+          console.log('undefined');
+        } else {
+          console.log(this.contents);
+        }
+        // console.debug(this.contents);
+        this.$store.dispatch('setContents', this.contents);
+        // console.debug(cons);
+        // return cons;
+        // return contents;
+        // console.debug("Hello");
+        callback(); //searchContents
+      },
+      async searchContents() {
+        // console.debug(this.listFolder())
+        // this.listFolder();
+        await this.sleep(100);
+        console.debug(this.$store.state.Directory.contents)
+        // console.debug(this.contents);
+        // for (let filePath of this.listFolder()) {
+        // console.log(filePath);
+        // }
+      },
+      sleep(ms){
+        console.debug("Sleeping for: " + ms)
+        return new Promise(resolve => setTimeout(resolve, ms));
       }
     }
   }
