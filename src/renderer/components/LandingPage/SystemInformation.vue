@@ -32,6 +32,7 @@
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
+    <button class="alt" @click='listFolder()'>list</button>
   </div>
 </template>
 
@@ -67,8 +68,8 @@
       }
     },
     mounted() {
-      var jsonQobj=jsonQ(this.obj);
-      console.log(jsonQobj.find('name').value());
+      var jsonQobj = jsonQ(this.obj);
+      console.debug(jsonQobj.find('name').value())
     },
     computed: {
       ...mapState({
@@ -113,6 +114,12 @@
         console.debug(this.$store.state.Directory.isDirSet)
         console.debug(this.$store.state.Directory.dir)
         console.debug(this.$store.state.Counter.main)
+      },
+      listFolder() {
+        fs.readdir(this.directory, (err, dir) => {
+          for (let filePath of dir)
+            console.log(filePath);
+        });
       }
     }
   }
