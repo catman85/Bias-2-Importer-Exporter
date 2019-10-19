@@ -33,6 +33,7 @@
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
     <button class="alt" @click='listFolder(searchContents)'>list</button>
+    <button class="alt" @click='viewJson()'>view json names</button>
   </div>
 </template>
 
@@ -61,21 +62,19 @@
         path: this.$route.path,
         platform: require('os').platform(),
         vue: require('vue/package.json').version,
-        contents: {},
-        obj: {
+        contents: Array,
+        jsonObj: {
           "age": 30,
           "name": "Angela",
           "husband": {
             "age": 23,
             "name": "William"
           }
-        }
+        },
+        filePathJson: '/home/jim/Documents/bank.json' // String
       }
     },
-    mounted() {
-      var jsonQobj = jsonQ(this.obj);
-      console.debug(jsonQobj.find('name').value())
-    },
+    mounted() {},
     computed: {
       ...mapState({
         count: state => state.Counter.main,
@@ -124,18 +123,10 @@
       async listFolder(callback) {
         const readdir = util.promisify(fs.readdir);
 
-        // let cons = fs.readdir(this.directory, (err, dir) => {
-        // let cons;
-        // await readdir(this.directory, (err, dir) => {
-          // for (let filePath of dir) {
-            // console.log(filePath);
-          // }
-          // cons = dir.slice();
-          // console.debug(this.contents);
-          // this.$store.dispatch('setContents', dir.slice());
-          // return dir;
-          // return contents;
-          // callback();
+        // fs.readdir(this.directory, (err, dir) => {
+        // for (let filePath of dir) {
+        // console.log(filePath);
+        // }
         // });
 
         try {
@@ -156,6 +147,18 @@
         // console.debug("Hello");
         callback(); //searchContents
       },
+      async viewJson() {
+        // var jsonQobj = jsonQ(this.jsonObj);
+        // console.debug(jsonQobj.find('bank_name').value())
+
+        const readfile = util.promisify(fs.readFile);
+
+        this.jsonObj = await readfile(this.filePathJson,'utf-8');
+        console.debug(this.jsonObj);
+
+        var jsonQobj = jsonQ(this.jsonObj);
+        console.debug(jsonQobj.find('bank_name').value())
+      },
       async searchContents() {
         // console.debug(this.listFolder())
         // this.listFolder();
@@ -166,7 +169,7 @@
         // console.log(filePath);
         // }
       },
-      sleep(ms){
+      sleep(ms) {
         console.debug("Sleeping for: " + ms)
         return new Promise(resolve => setTimeout(resolve, ms));
       }
