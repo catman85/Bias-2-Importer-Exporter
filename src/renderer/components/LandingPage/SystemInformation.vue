@@ -29,6 +29,8 @@
     </div>
     {{count}}
     {{directory}}
+    <br>
+    {{documentsPath}}
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
@@ -52,7 +54,6 @@
 
   const jsonQ = require("jsonq");
 
-
   export default {
     data() {
       return {
@@ -62,6 +63,7 @@
         path: this.$route.path,
         platform: require('os').platform(),
         vue: require('vue/package.json').version,
+        docPath: require('electron').remote.app.getPath('documents'), // getting native documents path
         contents: Array,
         jsonObj: {
           "age": 30,
@@ -74,12 +76,20 @@
         filePathJson: '/home/jim/Documents/bank.json' // String
       }
     },
-    mounted() {},
+    mounted() {
+      // console.debug(app.getPath('documents'));
+      // app.getAppPath();
+      // console.debug(this.$electron.app.getAppPath());
+      // console.debug(this.myAppPath);
+    },
     computed: {
       ...mapState({
         count: state => state.Counter.main,
         directory: state => state.Directory.dir
-      })
+      }),
+      documentsPath: function () {
+        
+      }
     },
     methods: {
       showSaveDialog(content) {
