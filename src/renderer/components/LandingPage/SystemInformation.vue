@@ -29,8 +29,6 @@
     </div>
     {{count}}
     {{directory}}
-    <br>
-    {{documentsPath}}
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
@@ -77,18 +75,19 @@
       }
     },
     mounted() {
-      // console.debug(app.getPath('documents'));
-      // app.getAppPath();
-      // console.debug(this.$electron.app.getAppPath());
-      // console.debug(this.myAppPath);
+      // this.showStateStuff();
+      this.checkDirectory();
     },
     computed: {
       ...mapState({
         count: state => state.Counter.main,
-        directory: state => state.Directory.dir
       }),
-      documentsPath: function () {
-        
+      directory: function () {
+        if (this.$store.state.Directory.isDirSet) {
+          return this.$store.state.Directory.dir;
+        } else {
+          return this.docPath + "/Positive Grid/";
+        }
       }
     },
     methods: {
@@ -117,6 +116,7 @@
           // folderPaths is an array that contains all the selected paths
           if (folderPaths === undefined) {
             console.log('No destination folder selected')
+            this.$store.dispatch('setDir', "")
           } else {
             // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
             this.$store.dispatch('setDir', folderPaths[0]) // calling the async action which can't modify the state
@@ -155,19 +155,9 @@
         // return cons;
         // return contents;
         // console.debug("Hello");
-        callback(); //searchContents
-      },
-      async viewJson() {
-        // var jsonQobj = jsonQ(this.jsonObj);
-        // console.debug(jsonQobj.find('bank_name').value())
-
-        const readfile = util.promisify(fs.readFile);
-
-        this.jsonObj = await readfile(this.filePathJson,'utf-8');
-        console.debug(this.jsonObj);
-
-        var jsonQobj = jsonQ(this.jsonObj);
-        console.debug(jsonQobj.find('bank_name').value())
+        if (callback != undefined) {
+          callback(); //searchContents
+        }
       },
       async searchContents() {
         // console.debug(this.listFolder())
@@ -178,6 +168,27 @@
         // for (let filePath of this.listFolder()) {
         // console.log(filePath);
         // }
+      },
+      async viewJson() {
+        // var jsonQobj = jsonQ(this.jsonObj);
+        // console.debug(jsonQobj.find('bank_name').value())
+
+        const readfile = util.promisify(fs.readFile);
+
+        this.jsonObj = await readfile(this.filePathJson, 'utf-8');
+        console.debug(this.jsonObj);
+
+        var jsonQobj = jsonQ(this.jsonObj);
+        console.debug(jsonQobj.find('bank_name').value())
+      },
+      checkDirectory() {
+        // this.listFolder()
+        if (fs.existsSync(this.directory + "bank.json")) {
+          console.log('Found file');
+        }else{
+          console.debug("Didn't find file");
+        }
+
       },
       sleep(ms) {
         console.debug("Sleeping for: " + ms)

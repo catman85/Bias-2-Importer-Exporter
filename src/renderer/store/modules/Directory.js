@@ -11,8 +11,12 @@ const mutations = {
     // we do have access to state from here
     // console.debug("trying to " + dir)
     // console.debug(state.dir)
-    state.dir = dir
-    state.isDirSet = true
+    state.dir = dir;
+    if (dir == "") { // nothing selected
+      state.isDirSet = false;
+    } else {
+      state.isDirSet = true
+    }
   },
   SET_CONTENTS(state, { //not used
     contents
