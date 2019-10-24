@@ -36,7 +36,7 @@
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
     <button class="alt" @click='listFolder(searchContents)'>list</button>
-    <button class="alt" @click='viewJson(filePathJson)'>view json names</button>
+    <button class="alt" @click='viewJson(filePathJson)'>view json names</button> 
   </div>
 </template>
 
