@@ -27,13 +27,16 @@
         <div class="value">{{ platform }}</div>
       </div>
     </div>
+    <div v-for="b in this.banksC" :key="b.bank_folder">
+      {{b.bank_folder}}
+    </div>
     {{count}}
     {{directory}}
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
     <button class="alt" @click='listFolder(searchContents)'>list</button>
-    <button class="alt" @click='viewJson()'>view json names</button>
+    <button class="alt" @click='viewJson(filePathJson)'>view json names</button>
   </div>
 </template>
 
@@ -63,6 +66,7 @@
         vue: require('vue/package.json').version,
         docPath: require('electron').remote.app.getPath('documents'), // getting native documents path
         contents: Array,
+        banks: [],
         jsonObj: {
           "age": 30,
           "name": "Angela",
@@ -88,6 +92,9 @@
         } else {
           return this.docPath + "/Positive Grid/";
         }
+      },
+      banksC: function () {
+        return this.banks;
       }
     },
     methods: {
@@ -169,23 +176,35 @@
         // console.log(filePath);
         // }
       },
-      async viewJson() {
+      async viewJson(path) {
         // var jsonQobj = jsonQ(this.jsonObj);
         // console.debug(jsonQobj.find('bank_name').value())
 
         const readfile = util.promisify(fs.readFile);
 
-        this.jsonObj = await readfile(this.filePathJson, 'utf-8');
-        console.debug(this.jsonObj);
+        this.jsonObj = await readfile(path, 'utf-8');
+        // console.debug(this.jsonObj)
 
         var jsonQobj = jsonQ(this.jsonObj);
-        console.debug(jsonQobj.find('bank_name').value())
+        // console.debug(jsonQobj.find('bank_name').value())
+
+        // getting all root elements
+        // this.banks
+        let entries = jsonQobj.find('bank_name', function () {
+          // return this >= 5;
+          return this
+        }).parent().value();
+
+        // console.debug(this.banks.value()) 
+        for(let b in entries) {
+          this.banks.push(entries[b]);
+        }
       },
       checkDirectory() {
         // this.listFolder()
-        if (fs.existsSync(this.directory + "bank.json")) {
-          console.log('Found file');
-        }else{
+        if (fs.existsSync(this.directory + "/BIAS_FX2/GlobalPresets/bank.json")) {
+          console.debug('Found file');
+        } else {
           console.debug("Didn't find file");
         }
 

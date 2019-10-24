@@ -64,7 +64,7 @@ function startRenderer () {
       {
         contentBase: path.join(__dirname, '../'),
         quiet: true,
-        hot:true, // ATTENTION failed attempt to fix bug hot reload
+        // hot:true, // ATTENTION failed attempt to fix bug hot reload i added this
         before (app, ctx) {
           app.use(hotMiddleware)
           ctx.middleware.waitUntilValid(() => {
