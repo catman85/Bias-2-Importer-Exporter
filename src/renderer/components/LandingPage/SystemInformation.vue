@@ -27,16 +27,24 @@
         <div class="value">{{ platform }}</div>
       </div>
     </div>
+    <div v-if="checkDirectory">
     <div v-for="b in this.banksC" :key="b.bank_folder">
-      {{b.bank_folder}}
+      <div @click="selectBank(b.bank_folder)">
+      {{b.bank_name}}
+      {{b.display_order}}
+      </div>
+      <br>
     </div>
-    {{count}}
-    {{directory}}
+    </div>
+    Is dir set? {{isDirSet}}<br>
+    Dir: {{directory}}<br>
+    is dir legit? {{checkDirectory}}<br>
+    Selected Bank Folder {{selectedBankFolder}}<br>
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
     <button class="alt" @click='listFolder(searchContents)'>list</button>
-    <button class="alt" @click='viewJson(filePathJson)'>view json names</button> 
+    <button class="alt" @click='searchBanks(filePathJson)'>view json names</button> 
   </div>
 </template>
 
@@ -75,16 +83,18 @@
             "name": "William"
           }
         },
-        filePathJson: '/home/jim/Documents/bank.json' // String
+        filePathJson: '/home/jim/Documents/bank.json', // String
+        bankJsonRelPath: '/BIAS_FX2/GlobalPresets/bank.json'
       }
     },
     mounted() {
-      // this.showStateStuff();
-      this.checkDirectory();
+      this.searchBanks(this.directory + this.bankJsonRelPath);
     },
     computed: {
       ...mapState({
         count: state => state.Counter.main,
+        isDirSet: state => state.Directory.isDirSet,
+        selectedBankFolder: state => state.Directory.selectedBankFolder
       }),
       directory: function () {
         if (this.$store.state.Directory.isDirSet) {
@@ -95,6 +105,15 @@
       },
       banksC: function () {
         return this.banks;
+      },
+      checkDirectory: function () {
+        if (fs.existsSync(this.directory + this.bankJsonRelPath)) {
+          console.debug('Found file');
+          return true;
+        } else {
+          console.debug("Didn't find file");
+          return false;
+        }
       }
     },
     methods: {
@@ -130,12 +149,20 @@
             console.log(folderPaths)
           }
         })
+
+        this.searchBanks(this.directory + this.bankJsonRelPath);
       },
       showStateStuff() {
         console.debug(this.$store.state.Directory.isDirSet)
-        console.debug(this.$store.state.Directory.dir)
-        console.debug(this.$store.state.Counter.main)
+        if(this.$store.state.Directory.isDirSet){
+          console.debug(this.$store.state.Directory.dir)
+        }
+        console.debug(this.$store.state.Directory.selectedBankFolder);
         console.debug(this.$store.state.Directory.contents)
+      },
+      async selectBank(folderName) {
+        console.debug(folderName);
+        this.$store.dispatch('setBank', folderName);
       },
       async listFolder(callback) {
         const readdir = util.promisify(fs.readdir);
@@ -176,7 +203,7 @@
         // console.log(filePath);
         // }
       },
-      async viewJson(path) {
+      async searchBanks(path) {
         // var jsonQobj = jsonQ(this.jsonObj);
         // console.debug(jsonQobj.find('bank_name').value())
 
@@ -195,19 +222,13 @@
           return this
         }).parent().value();
 
-        // console.debug(this.banks.value()) 
+        // Clearing the array
+        this.banks = [];
+
         for(let b in entries) {
           this.banks.push(entries[b]);
         }
-      },
-      checkDirectory() {
-        // this.listFolder()
-        if (fs.existsSync(this.directory + "/BIAS_FX2/GlobalPresets/bank.json")) {
-          console.debug('Found file');
-        } else {
-          console.debug("Didn't find file");
-        }
-
+        console.debug(this.banks)
       },
       sleep(ms) {
         console.debug("Sleeping for: " + ms)

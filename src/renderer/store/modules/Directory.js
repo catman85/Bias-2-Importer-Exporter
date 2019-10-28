@@ -1,7 +1,8 @@
 const state = {
   isDirSet: false,
   dir: String,
-  contents: Array
+  contents: Array,
+  selectedBankFolder : String
 }
 
 const mutations = {
@@ -22,6 +23,11 @@ const mutations = {
     contents
   }) {
     state.contents = contents
+  },
+  SET_BANK(state, {
+    bankFolder
+  }) {
+    state.selectedBankFolder = bankFolder
   }
 }
 
@@ -41,6 +47,11 @@ const actions = {
   }, payload) {
     commit('SET_CONTENTS', {
       'contents': payload
+    })
+  },
+  setBank({commit},payload){
+    commit('SET_BANK',{
+      'bankFolder' : payload
     })
   }
 }
