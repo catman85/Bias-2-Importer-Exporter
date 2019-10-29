@@ -1,8 +1,8 @@
 {
-  "name": "bias-2-ie",
+  "name": "my-project",
   "version": "0.0.1",
   "author": "jimmy <test@protonmail.com>",
-  "description": "An app that allows you to import and export presets for Positive Grid's Bias Fx 2 software",
+  "description": "An electron-vue project",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
@@ -14,10 +14,10 @@
     "pack": "npm run pack:main && npm run pack:renderer",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
-    "install-wsl": "npm install && npm uninstall electron && export npm_config_platform=win32 && npm install electron && unset npm_config_platform"
+    "postinstall": ""
   },
   "build": {
-    "productName": "bias-2-ie",
+    "productName": "my-project",
     "appId": "com.example.yourapp",
     "directories": {
       "output": "build"
@@ -51,7 +51,7 @@
     }
   },
   "dependencies": {
-    "electron": "^6.0.12",
+    "fs-extra": "^8.1.0",
     "jsonq": "^1.2.0",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",
@@ -75,12 +75,13 @@
     "css-loader": "^0.28.11",
     "del": "^3.0.0",
     "devtron": "^1.4.0",
-    "electron-builder": "^20.19.2",
+    "electron": "^2.0.4",
     "electron-debug": "^1.5.0",
     "electron-devtools-installer": "^2.2.4",
+    "electron-builder": "^20.19.2",
+    "mini-css-extract-plugin": "0.4.0",
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
-    "mini-css-extract-plugin": "0.4.0",
     "multispinner": "^0.2.1",
     "node-loader": "^0.6.0",
     "node-sass": "^4.9.2",
@@ -91,8 +92,8 @@
     "vue-loader": "^15.2.4",
     "vue-style-loader": "^4.1.0",
     "vue-template-compiler": "^2.5.16",
-    "webpack": "^4.15.1",
     "webpack-cli": "^3.0.8",
+    "webpack": "^4.15.1",
     "webpack-dev-server": "^3.1.4",
     "webpack-hot-middleware": "^2.22.2",
     "webpack-merge": "^4.1.3"

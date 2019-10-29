@@ -32,17 +32,6 @@ let rendererConfig = {
   module: {
     rules: [
       {
-        test: /\.(js|vue)$/,
-        enforce: 'pre',
-        exclude: /node_modules/,
-        // use: { // ATTENTION disabled this because it was a pain in the ass
-        //   loader: 'eslint-loader',
-        //   options: {
-        //     formatter: require('eslint-friendly-formatter')
-        //   }
-        // }
-      },
-      {
         test: /\.scss$/,
         use: ['vue-style-loader', 'css-loader', 'sass-loader']
       },
@@ -76,7 +65,6 @@ let rendererConfig = {
         use: {
           loader: 'vue-loader',
           options: {
-            // hotReload: true, // ATTENTION i added this
             extractCSS: process.env.NODE_ENV === 'production',
             loaders: {
               sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax=1',
