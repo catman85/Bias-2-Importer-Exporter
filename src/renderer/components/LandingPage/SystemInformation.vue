@@ -54,7 +54,8 @@
     mapActions
   } from 'vuex'
 
-  const fs = require('fs')
+  // require('fs')
+  const fs = require('fs-extra')
   const {
     dialog
   } = require('electron').remote
