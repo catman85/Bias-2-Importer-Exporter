@@ -40,6 +40,7 @@
     Dir: {{directory}}<br>
     is dir legit? {{checkDirectory}}<br>
     Selected Bank Folder {{selectedBankFolder}}<br>
+    {{presetJsonPath}}
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
@@ -64,6 +65,8 @@
 
   const jsonQ = require("jsonq");
 
+  const readfile = util.promisify(fs.readFile);
+
   export default {
     data() {
       return {
@@ -76,20 +79,13 @@
         docPath: require('electron').remote.app.getPath('documents'), // getting native documents path
         contents: Array,
         banks: [],
-        jsonObj: {
-          "age": 30,
-          "name": "Angela",
-          "husband": {
-            "age": 23,
-            "name": "William"
-          }
-        },
+        presets: [],
         filePathJson: '/home/jim/Documents/bank.json', // String
         bankJsonRelPath: '/BIAS_FX2/GlobalPresets/bank.json'
       }
     },
     mounted() {
-      this.searchBanks(this.directory + this.bankJsonRelPath);
+      this.init();
     },
     computed: {
       ...mapState({
@@ -107,6 +103,9 @@
       banksC: function () {
         return this.banks;
       },
+      presetsC: function () {
+        return this.presets;
+      },
       checkDirectory: function () {
         if (fs.existsSync(this.directory + this.bankJsonRelPath)) {
           console.debug('Found file');
@@ -115,9 +114,19 @@
           console.debug("Didn't find file");
           return false;
         }
+      },
+      presetJsonPath: function () {
+        return this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder + '/preset.json';
       }
     },
     methods: {
+      async init(){
+      // this.searchBanks(this.directory + this.bankJsonRelPath);
+      // console.debug(this.presetJsonPath);
+      // this.searchPresets(this.presetJsonPath);
+      this.banks = await this.getJson(this.directory + this.bankJsonRelPath,'bank_name')
+      this.presets = await this.getJson(this.presetJsonPath,'preset_name')
+      },
       showSaveDialog(content) {
         // You can obviously give a direct path without use the dialog (C:/Program Files/path/myfileexample.txt)
         dialog.showSaveDialog((fileName) => {
@@ -151,7 +160,7 @@
           }
         })
 
-        this.searchBanks(this.directory + this.bankJsonRelPath);
+        this.init();
       },
       showStateStuff() {
         console.debug(this.$store.state.Directory.isDirSet)
@@ -164,6 +173,7 @@
       async selectBank(folderName) {
         console.debug(folderName);
         this.$store.dispatch('setBank', folderName);
+        this.init();
       },
       async listFolder(callback) {
         const readdir = util.promisify(fs.readdir);
@@ -204,36 +214,27 @@
         // console.log(filePath);
         // }
       },
-      async searchBanks(path) {
-        // var jsonQobj = jsonQ(this.jsonObj);
-        // console.debug(jsonQobj.find('bank_name').value())
+      async getJson(path,identifier){ // Objects are Passed by Reference // Arguments are Passed by Value
+        let jsonObj = await readfile(path, 'utf-8');
+        // console.debug(jsonObj);
 
-        const readfile = util.promisify(fs.readFile);
+        var jsonQobj = jsonQ(jsonObj);
+        // console.debug(jsonQobj.find(identifier).value())
 
-        this.jsonObj = await readfile(path, 'utf-8');
-        // console.debug(this.jsonObj)
-
-        var jsonQobj = jsonQ(this.jsonObj);
-        // console.debug(jsonQobj.find('bank_name').value())
-
-        // getting all root elements
-        // this.banks
-        let entries = jsonQobj.find('bank_name', function () {
+        // getting all elements that have identifier as a property
+        let entries = jsonQobj.find(identifier, function () {
           // return this >= 5;
           return this
         }).parent().value();
 
         // Clearing the array
-        this.banks = [];
+        let result = [];
 
         for(let b in entries) {
-          this.banks.push(entries[b]);
+          result.push(entries[b]);
         }
-        console.debug(this.banks)
-      },
-      sleep(ms) {
-        console.debug("Sleeping for: " + ms)
-        return new Promise(resolve => setTimeout(resolve, ms));
+        console.debug(result)
+        return result;
       }
     }
   }

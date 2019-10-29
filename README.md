@@ -19,6 +19,8 @@ npm run build
 npm run lint
 # ESlint caused problems with hot reload so I removed it
 
+#if you get permission problems or problems with libdbus just delete your local instance and git clone again
+
 ```
 
 ---
