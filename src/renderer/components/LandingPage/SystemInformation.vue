@@ -86,6 +86,7 @@
     },
     mounted() {
       this.init();
+      this.sleep(200);
     },
     computed: {
       ...mapState({
