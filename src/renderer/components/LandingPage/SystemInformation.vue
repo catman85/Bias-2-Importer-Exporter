@@ -28,24 +28,37 @@
       </div>
     </div>
     <div v-if="checkDirectory">
-    <div v-for="b in this.banksC" :key="b.bank_folder">
-      <div @click="selectBank(b.bank_folder)">
-      {{b.bank_name}}
-      {{b.display_order}}
+      <div v-for="b in this.banksC" :key="b.bank_folder">
+        <div @click="selectBank(b.bank_folder)">
+          {{b.bank_name}}
+          {{b.display_order}}
+        </div>
+        <br>
       </div>
       <br>
-    </div>
     </div>
     Is dir set? {{isDirSet}}<br>
     Dir: {{directory}}<br>
     is dir legit? {{checkDirectory}}<br>
     Selected Bank Folder {{selectedBankFolder}}<br>
-    {{presetJsonPath}}
+    Selected Bank Path {{selectedBankPath}}<br>
+    Preset Json Path: {{presetJsonPath}}<br>
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
-    <button class="alt" @click='selectFolder()'>Select Folder</button>
+    <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
     <button class="alt" @click='listFolder(searchContents)'>list</button>
-    <button class="alt" @click='searchBanks(filePathJson)'>view json names</button> 
+    <div v-for="p in this.presetsC" :key="p.preset_folder">
+      <!-- TODO: move up and down delete favorite-->
+      <div @click="exportPreset(p.preset_uuid)">
+        {{p.preset_name}}
+        {{p.display_order}}
+        {{p.is_favorite}}
+        {{p.preset_uuid}}
+      </div>
+      <div @click="changeOrder(direction.UP,p)">UP</div>
+      <div @click="changeOrder(direction.DOWN,p)">DOWN</div>
+      <br>
+    </div>
   </div>
 </template>
 
@@ -80,13 +93,13 @@
         contents: Array,
         banks: [],
         presets: [],
-        filePathJson: '/home/jim/Documents/bank.json', // String
+        direction : Object.freeze({"UP":0,"DOWN":1}),
+        // filePathJson: '/home/jim/Documents/bank.json', // String
         bankJsonRelPath: '/BIAS_FX2/GlobalPresets/bank.json'
       }
     },
     mounted() {
       this.init();
-      this.sleep(200);
     },
     computed: {
       ...mapState({
@@ -98,7 +111,7 @@
         if (this.$store.state.Directory.isDirSet) {
           return this.$store.state.Directory.dir;
         } else {
-          return this.docPath + "/Positive Grid/";
+          return this.docPath + "/Positive Grid";
         }
       },
       banksC: function () {
@@ -118,15 +131,16 @@
       },
       presetJsonPath: function () {
         return this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder + '/preset.json';
+      },
+      selectedBankPath: function () {
+        return this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder;
       }
     },
     methods: {
-      async init(){
-      // this.searchBanks(this.directory + this.bankJsonRelPath);
-      // console.debug(this.presetJsonPath);
-      // this.searchPresets(this.presetJsonPath);
-      this.banks = await this.getJson(this.directory + this.bankJsonRelPath,'bank_name')
-      this.presets = await this.getJson(this.presetJsonPath,'preset_name')
+      async init() {
+        // console.debug(this.presetJsonPath);
+        this.banks = await this.getJson(this.directory + this.bankJsonRelPath, 'bank_name')
+        this.presets = await this.getJson(this.presetJsonPath, 'preset_name')
       },
       showSaveDialog(content) {
         // You can obviously give a direct path without use the dialog (C:/Program Files/path/myfileexample.txt)
@@ -145,7 +159,7 @@
           })
         })
       },
-      selectFolder() {
+      selectPositiveGridFolder() {
         dialog.showOpenDialog({
           title: 'Select a folder',
           properties: ['openDirectory']
@@ -165,7 +179,7 @@
       },
       showStateStuff() {
         console.debug(this.$store.state.Directory.isDirSet)
-        if(this.$store.state.Directory.isDirSet){
+        if (this.$store.state.Directory.isDirSet) {
           console.debug(this.$store.state.Directory.dir)
         }
         console.debug(this.$store.state.Directory.selectedBankFolder);
@@ -175,6 +189,59 @@
         console.debug(folderName);
         this.$store.dispatch('setBank', folderName);
         this.init();
+      },
+      async exportPreset(uuid) {
+        console.debug(uuid);
+        dialog.showOpenDialog({
+          title: 'Select a folder to export the preset to',
+          properties: ['openDirectory']
+        }, (folderPaths) => {
+          // folderPaths is an array that contains all the selected paths
+          if (folderPaths === undefined) {
+            console.log('No destination folder selected')
+          } else {
+            let selectedPresetPath = this.selectedBankPath + '/' + uuid;
+            let destination = folderPaths[0] +'/'+ uuid
+            console.debug(selectedPresetPath);
+            console.log(destination)
+
+            // copies directory, even if it has subdirectories or files
+            fs.copy(selectedPresetPath, destination, {overwrite : true}, err => {
+              if (err) return console.error(err)
+
+              console.log('success!')
+            })
+          }
+        })
+      },
+      async changeOrder(dir,preset){
+        if(preset.display_order == 0 && dir == this.direction.UP){
+          console.debug("Can't go up")
+          return
+        }else if((preset.display_order == this.presets.length -1) && dir == this.direction.DOWN){
+          console.debug("Can't go down")
+          return
+        }
+
+        let jsonObj = await readfile(this.presetJsonPath, 'utf-8');
+        // console.debug(jsonObj);
+        var jsonQobj = jsonQ(jsonObj);
+        // console.debug(jsonQobj.find(identifier).value())
+
+        let prev = jsonQobj.find('display_order', function () {
+          return this == preset.display_order-1;
+        });
+        console.debug(prev.parent().value())
+
+        let curr = jsonQobj.find('display_order', function () {
+          return this == preset.display_order;
+        });
+        console.debug(curr.parent().value())
+
+        let next = jsonQobj.find('display_order', function () {
+          return this == preset.display_order+1;
+        });
+        console.debug(next.parent().value())
       },
       async listFolder(callback) {
         const readdir = util.promisify(fs.readdir);
@@ -215,7 +282,7 @@
         // console.log(filePath);
         // }
       },
-      async getJson(path,identifier){ // Objects are Passed by Reference // Arguments are Passed by Value
+      async getJson(path, identifier) { // Objects are Passed by Reference // Arguments are Passed by Value
         let jsonObj = await readfile(path, 'utf-8');
         // console.debug(jsonObj);
 
@@ -231,7 +298,7 @@
         // Clearing the array
         let result = [];
 
-        for(let b in entries) {
+        for (let b in entries) {
           result.push(entries[b]);
         }
         console.debug(result)
