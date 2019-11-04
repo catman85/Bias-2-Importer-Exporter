@@ -231,6 +231,12 @@
         } else if ((preset.display_order == this.presets.length - 1) && dir == this.direction.DOWN) {
           console.debug("Can't go down")
           return
+        } else if (preset.display_order == 1 && dir == this.direction.UP) {
+          console.debug("weird ass bug")
+          return
+        } else if (preset.display_order == 0 && dir == this.direction.DOWN) {
+          console.debug("weird ass bug")
+          return
         }
 
         let jsonObj = await readfile(this.presetJsonPath, 'utf-8');
@@ -259,12 +265,16 @@
 
         // modifying siblings
         if (dir == this.direction.UP) {
-          let p = prev.find('display_order').value()[0]
           let c = curr.find('display_order').value()[0]
+          let p = prev.find('display_order').value()[0]
+          // console.debug(c-1) // FIXME: it says 0 here creates duplicates
+          if(c == 1){
+            console.debug("one detected")
+            curr.value(0)
+          }else{
+            curr.value(c - 1)
+          }
           prev.value(p + 1)
-          curr.value(c - 1)
-          // console.debug(c-1) // FIXME: it says 0 here
-
           // console.debug(prev.find('display_order').value()[0])
           // console.debug(curr.find('display_order').value()[0]) // FIXME: but it says 1 here???
         }
@@ -279,9 +289,10 @@
         // sorting based on display order
         jsonQobj.sort('display_order')
 
-        // console.debug(jsonQobj.value());
-        // console.debug(JSON.stringify(jsonQobj.value()))
-        this.updateJson(this.presetJsonPath, JSON.stringify(jsonQobj.value()))
+        // console.debug(jsonQobj.value()[0]);
+        let updatedContent = JSON.stringify(jsonQobj.value()[0])
+        console.debug(updatedContent)
+        this.updateJson(this.presetJsonPath, updatedContent)
         this.init();
 
       },
