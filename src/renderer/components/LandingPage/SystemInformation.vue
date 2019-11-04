@@ -40,15 +40,18 @@
     Is dir set? {{isDirSet}}<br>
     Dir: {{directory}}<br>
     is dir legit? {{checkDirectory}}<br>
-    Selected Bank Folder {{selectedBankFolder}}<br>
-    Selected Bank Path {{selectedBankPath}}<br>
-    Preset Json Path: {{presetJsonPath}}<br>
+    <div v-if="checkDirectory">
+      Selected Bank Folder {{selectedBankFolder}}<br>
+      Selected Bank Path {{selectedBankPath}}<br>
+      Preset Json Path: {{presetJsonPath}}<br>
+    </div>
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
     <button class="alt" @click='listFolder(searchContents)'>list</button>
     <div v-for="p in this.presetsC" :key="p.preset_folder">
       <!-- TODO: move up and down delete favorite-->
+      <!-- TODO: platform based paths -->
       <div @click="exportPreset(p.preset_uuid)">
         {{p.preset_name}}
         {{p.display_order}}
@@ -87,15 +90,18 @@
         name: this.$route.name,
         node: process.versions.node,
         path: this.$route.path,
-        platform: require('os').platform(),
+        platform: require('os').platform(), // Possible values are: 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
         vue: require('vue/package.json').version,
         docPath: require('electron').remote.app.getPath('documents'), // getting native documents path
         contents: Array,
         banks: [],
         presets: [],
-        direction : Object.freeze({"UP":0,"DOWN":1}),
+        direction: Object.freeze({
+          "UP": 0,
+          "DOWN": 1
+        }),
         // filePathJson: '/home/jim/Documents/bank.json', // String
-        bankJsonRelPath: '/BIAS_FX2/GlobalPresets/bank.json'
+        bankJsonRelPath: this.nativePath('/BIAS_FX2/GlobalPresets/bank.json')
       }
     },
     mounted() {
@@ -111,7 +117,7 @@
         if (this.$store.state.Directory.isDirSet) {
           return this.$store.state.Directory.dir;
         } else {
-          return this.docPath + "/Positive Grid";
+          return this.nativePath(this.docPath + "/Positive Grid");
         }
       },
       banksC: function () {
@@ -130,15 +136,15 @@
         }
       },
       presetJsonPath: function () {
-        return this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder + '/preset.json';
+        return this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder +
+        '/preset.json');
       },
       selectedBankPath: function () {
-        return this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder;
+        return this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
       }
     },
     methods: {
       async init() {
-        // console.debug(this.presetJsonPath);
         this.banks = await this.getJson(this.directory + this.bankJsonRelPath, 'bank_name')
         this.presets = await this.getJson(this.presetJsonPath, 'preset_name')
       },
@@ -201,12 +207,14 @@
             console.log('No destination folder selected')
           } else {
             let selectedPresetPath = this.selectedBankPath + '/' + uuid;
-            let destination = folderPaths[0] +'/'+ uuid
+            let destination = folderPaths[0] + '/' + uuid
             console.debug(selectedPresetPath);
             console.log(destination)
 
             // copies directory, even if it has subdirectories or files
-            fs.copy(selectedPresetPath, destination, {overwrite : true}, err => {
+            fs.copy(selectedPresetPath, destination, {
+              overwrite: true
+            }, err => {
               if (err) return console.error(err)
 
               console.log('success!')
@@ -214,11 +222,11 @@
           }
         })
       },
-      async changeOrder(dir,preset){
-        if(preset.display_order == 0 && dir == this.direction.UP){
+      async changeOrder(dir, preset) {
+        if (preset.display_order == 0 && dir == this.direction.UP) {
           console.debug("Can't go up")
           return
-        }else if((preset.display_order == this.presets.length -1) && dir == this.direction.DOWN){
+        } else if ((preset.display_order == this.presets.length - 1) && dir == this.direction.DOWN) {
           console.debug("Can't go down")
           return
         }
@@ -229,7 +237,7 @@
         // console.debug(jsonQobj.find(identifier).value())
 
         let prev = jsonQobj.find('display_order', function () {
-          return this == preset.display_order-1;
+          return this == preset.display_order - 1;
         });
         console.debug(prev.parent().value())
 
@@ -239,7 +247,7 @@
         console.debug(curr.parent().value())
 
         let next = jsonQobj.find('display_order', function () {
-          return this == preset.display_order+1;
+          return this == preset.display_order + 1;
         });
         console.debug(next.parent().value())
       },

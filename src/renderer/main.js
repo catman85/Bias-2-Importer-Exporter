@@ -12,9 +12,24 @@ Vue.mixin({
     sleep(ms) {
       console.debug("Sleeping for: " + ms)
       return new Promise(resolve => setTimeout(resolve, ms));
+    },
+    nativePath(path) {
+      // Possible values are: 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
+      let platform = require('os').platform();
+      if(platform === "win32"){
+        // console.debug(path.replace(/\//g, "\\"))
+        path = path.replace(/\//g, "\\");
+      }
+      // console.debug("changing Path: " + path + platform)
+      return path;
     }
   }
 })
+
+Vue.filter('filterTest', function(p){
+    console.debug("changing Path: " + p)
+    return p;
+});
 
 /* eslint-disable no-new */
 new Vue({
