@@ -40,11 +40,10 @@
     Is dir set? {{isDirSet}}<br>
     Dir: {{directory}}<br>
     is dir legit? {{checkDirectory}}<br>
-    <div v-if="checkDirectory">
-      Selected Bank Folder {{selectedBankFolder}}<br>
-      Selected Bank Path {{selectedBankPath}}<br>
-      Preset Json Path: {{presetJsonPath}}<br>
-    </div>
+    <!-- <div v-if="checkDirectory"> -->
+    Selected Bank Path {{selectedBankPath}}<br>
+    Preset Json Path: {{presetJsonPath}}<br>
+    <!-- </div> -->
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
@@ -105,6 +104,7 @@
       }
     },
     mounted() {
+      // you could use async computed properties instead
       this.init();
     },
     computed: {
@@ -117,7 +117,7 @@
         if (this.$store.state.Directory.isDirSet) {
           return this.$store.state.Directory.dir;
         } else {
-          return this.nativePath(this.docPath + "/Positive Grid");
+          return this.nativePath(this.docPath + "/PositiveGrid");
         }
       },
       banksC: function () {
@@ -137,7 +137,7 @@
       },
       presetJsonPath: function () {
         return this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder +
-        '/preset.json');
+          '/preset.json');
       },
       selectedBankPath: function () {
         return this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
@@ -165,7 +165,7 @@
           })
         })
       },
-      selectPositiveGridFolder() {
+      async selectPositiveGridFolder() {
         dialog.showOpenDialog({
           title: 'Select a folder',
           properties: ['openDirectory']
@@ -176,12 +176,13 @@
             this.$store.dispatch('setDir', "")
           } else {
             // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
-            this.$store.dispatch('setDir', folderPaths[0]) // calling the async action which can't modify the state
+            this.$store.dispatch('setDir', folderPaths[
+              0]) // calling the async action which can't modify the state
             console.log(folderPaths)
           }
         })
 
-        this.init();
+        await this.init();
       },
       showStateStuff() {
         console.debug(this.$store.state.Directory.isDirSet)
@@ -194,6 +195,7 @@
       async selectBank(folderName) {
         console.debug(folderName);
         this.$store.dispatch('setBank', folderName);
+        await this.sleep(100); // FIXME: not cool
         this.init();
       },
       async exportPreset(uuid) {
@@ -234,22 +236,62 @@
         let jsonObj = await readfile(this.presetJsonPath, 'utf-8');
         // console.debug(jsonObj);
         var jsonQobj = jsonQ(jsonObj);
-        // console.debug(jsonQobj.find(identifier).value())
+        // console.debug(jsonQobj.value())
 
+        // finding siblings
         let prev = jsonQobj.find('display_order', function () {
-          return this == preset.display_order - 1;
+          return this === preset.display_order - 1;
         });
-        console.debug(prev.parent().value())
+        // console.debug("Previous")
+        // console.debug(prev.parent().value())
 
         let curr = jsonQobj.find('display_order', function () {
-          return this == preset.display_order;
+          return this === preset.display_order;
         });
-        console.debug(curr.parent().value())
+        // console.debug("Current")
+        // console.debug(curr.parent().value())
 
         let next = jsonQobj.find('display_order', function () {
-          return this == preset.display_order + 1;
+          return this === preset.display_order + 1;
         });
-        console.debug(next.parent().value())
+        // console.debug("Next")
+        // console.debug(next.parent().value())
+
+        // modifying siblings
+        if (dir == this.direction.UP) {
+          let p = prev.find('display_order').value()[0]
+          let c = curr.find('display_order').value()[0]
+          prev.value(p + 1)
+          curr.value(c - 1)
+          // console.debug(c-1) // FIXME: it says 0 here
+
+          // console.debug(prev.find('display_order').value()[0])
+          // console.debug(curr.find('display_order').value()[0]) // FIXME: but it says 1 here???
+        }
+        if (dir == this.direction.DOWN) {
+          // console.debug(next.find('display_order').value())
+          let c = curr.find('display_order').value()[0]
+          let n = next.find('display_order').value()[0]
+          curr.value(c + 1)
+          next.value(n - 1)
+        }
+
+        // sorting based on display order
+        jsonQobj.sort('display_order')
+
+        // console.debug(jsonQobj.value());
+        // console.debug(JSON.stringify(jsonQobj.value()))
+        this.updateJson(this.presetJsonPath, JSON.stringify(jsonQobj.value()))
+        this.init();
+
+      },
+      async updateJson(path, content) {
+        const writefile = util.promisify(fs.writeFile);
+        await writefile(path, content)
+          .catch((err) => {
+            console.log('Error', err);
+            alert(err)
+          });
       },
       async listFolder(callback) {
         const readdir = util.promisify(fs.readdir);
@@ -291,8 +333,15 @@
         // }
       },
       async getJson(path, identifier) { // Objects are Passed by Reference // Arguments are Passed by Value
-        let jsonObj = await readfile(path, 'utf-8');
-        // console.debug(jsonObj);
+        let jsonObj;
+        try {
+          jsonObj = await readfile(path, 'utf-8');
+          // console.debug(jsonObj);
+        } catch (err) {
+          console.debug("error path invalid")
+          // alert("Error Invalid Path")
+          return;
+        }
 
         var jsonQobj = jsonQ(jsonObj);
         // console.debug(jsonQobj.find(identifier).value())
@@ -310,6 +359,7 @@
           result.push(entries[b]);
         }
         console.debug(result)
+        console.debug(result.length) // TODO: empty bank case
         return result;
       }
     }
