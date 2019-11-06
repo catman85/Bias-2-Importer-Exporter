@@ -49,13 +49,15 @@
     <button class="alt" @click='showStateStuff()'>shot state</button>
     <button class="alt" @click='listFolder(searchContents)'>list</button>
     <div v-for="p in this.presetsC" :key="p.preset_folder">
-      <!-- TODO: move up and down delete favorite-->
+      <!-- TODO: favorite rename -->
       <!-- TODO: platform based paths -->
       <div @click="exportPreset(p.preset_uuid)">
         {{p.preset_name}}
         {{p.display_order}}
-        {{p.is_favorite}}
         {{p.preset_uuid}}
+      </div>
+      <div @click="favoriteChange(p)">
+        {{p.is_favorite}}
       </div>
       <div @click="changeOrder(direction.UP,p)">UP</div>
       <div @click="changeOrder(direction.DOWN,p)">DOWN</div>
@@ -224,6 +226,23 @@
           }
         })
       },
+      async favoriteChange(preset) {
+        let jsonObj = await readfile(this.presetJsonPath, 'utf-8');
+        let jsonQobj = jsonQ(jsonObj);
+
+        // searching for an entry with out preset id
+        let curr = jsonQobj.find('preset_uuid', function () {
+          return this === preset.preset_uuid
+        }).parent();
+
+        curr.find('is_favorite').value(function (bool) {
+          return !bool;
+        });
+
+        let updatedContent = JSON.stringify(jsonQobj.value()[0])
+        this.updateJson(this.presetJsonPath, updatedContent)
+        this.init();
+      },
       async changeOrder(dir, preset) {
         if (preset.display_order == 0 && dir == this.direction.UP) {
           console.debug("Can't go up")
@@ -268,10 +287,10 @@
           let c = curr.find('display_order').value()[0]
           let p = prev.find('display_order').value()[0]
           // console.debug(c-1) // FIXME: it says 0 here creates duplicates
-          if(c == 1){
+          if (c == 1) {
             console.debug("one detected")
             curr.value(0)
-          }else{
+          } else {
             curr.value(c - 1)
           }
           prev.value(p + 1)
@@ -291,7 +310,7 @@
 
         // console.debug(jsonQobj.value()[0]);
         let updatedContent = JSON.stringify(jsonQobj.value()[0])
-        console.debug(updatedContent)
+        // console.debug(updatedContent)
         this.updateJson(this.presetJsonPath, updatedContent)
         this.init();
 
