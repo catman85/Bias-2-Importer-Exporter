@@ -250,12 +250,6 @@
         } else if ((preset.display_order == this.presets.length - 1) && dir == this.direction.DOWN) {
           console.debug("Can't go down")
           return
-        } else if (preset.display_order == 1 && dir == this.direction.UP) {
-          console.debug("weird ass bug")
-          return
-        } else if (preset.display_order == 0 && dir == this.direction.DOWN) {
-          console.debug("weird ass bug")
-          return
         }
 
         let jsonObj = await readfile(this.presetJsonPath, 'utf-8');
@@ -267,42 +261,39 @@
         let prev = jsonQobj.find('display_order', function () {
           return this === preset.display_order - 1;
         });
-        // console.debug("Previous")
         // console.debug(prev.parent().value())
 
         let curr = jsonQobj.find('display_order', function () {
           return this === preset.display_order;
         });
-        // console.debug("Current")
         // console.debug(curr.parent().value())
 
         let next = jsonQobj.find('display_order', function () {
           return this === preset.display_order + 1;
         });
-        // console.debug("Next")
         // console.debug(next.parent().value())
+
+        // let c = curr.find('display_order').value()[0]
+        // let p = prev.find('display_order').value()[0]
 
         // modifying siblings
         if (dir == this.direction.UP) {
-          let c = curr.find('display_order').value()[0]
-          let p = prev.find('display_order').value()[0]
-          // console.debug(c-1) // FIXME: it says 0 here creates duplicates
-          if (c == 1) {
-            console.debug("one detected")
-            curr.value(0)
-          } else {
-            curr.value(c - 1)
-          }
-          prev.value(p + 1)
-          // console.debug(prev.find('display_order').value()[0])
-          // console.debug(curr.find('display_order').value()[0]) // FIXME: but it says 1 here???
+          curr.value(function (order) {
+            return order - 1;
+          })
+
+          prev.value(function (order) {
+            return order + 1;
+          })
         }
         if (dir == this.direction.DOWN) {
-          // console.debug(next.find('display_order').value())
-          let c = curr.find('display_order').value()[0]
-          let n = next.find('display_order').value()[0]
-          curr.value(c + 1)
-          next.value(n - 1)
+          curr.value(function (order) {
+            return order + 1;
+          })
+
+          next.value(function (order) {
+            return order - 1;
+          })
         }
 
         // sorting based on display order
@@ -310,10 +301,8 @@
 
         // console.debug(jsonQobj.value()[0]);
         let updatedContent = JSON.stringify(jsonQobj.value()[0])
-        // console.debug(updatedContent)
         this.updateJson(this.presetJsonPath, updatedContent)
         this.init();
-
       },
       async updateJson(path, content) {
         const writefile = util.promisify(fs.writeFile);
