@@ -47,7 +47,7 @@
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
-    <button class="alt" @click='listFolder(searchContents)'>list</button>
+    <button class="alt" @click='listFolder(directory)'>list</button>
     <div v-for="p in this.presetsC" :key="p.preset_folder">
       <!-- TODO: favorite rename -->
       <div @click="exportPreset(p.preset_uuid)">
@@ -67,6 +67,8 @@
 </template>
 
 <script>
+  const fs = require('fs-extra')
+
   import {
     mapState,
     mapActions
@@ -76,38 +78,23 @@
   } from 'fs';
 
   // require('fs')
-  const fs = require('fs-extra')
+  // const fs = require('fs-extra')
   const {
     dialog
   } = require('electron').remote
 
   const util = require('util');
 
-  const jsonQ = require("jsonq");
-
   const prompt = require('electron-prompt');
-
-  const readfile = util.promisify(fs.readFile);
 
   export default {
     data() {
       return {
-        electron: process.versions.electron,
-        name: this.$route.name,
-        node: process.versions.node,
-        path: this.$route.path,
-        platform: require('os').platform(), // Possible values are: 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
-        vue: require('vue/package.json').version,
-        docPath: require('electron').remote.app.getPath('documents'), // getting native documents path
-        contents: Array,
-        banks: [],
-        presets: [],
         direction: Object.freeze({
           "UP": 0,
           "DOWN": 1
         }),
         // filePathJson: '/home/jim/Documents/bank.json', // String
-        bankJsonRelPath: this.nativePath('/BIAS_FX2/GlobalPresets/bank.json')
       }
     },
     mounted() {
@@ -155,6 +142,24 @@
         this.banks = await this.getJson(this.directory + this.bankJsonRelPath, 'bank_name')
         this.presets = await this.getJson(this.presetJsonPath, 'preset_name')
       },
+      async selectPositiveGridFolder() {
+        dialog.showOpenDialog({
+          title: 'Select a folder',
+          properties: ['openDirectory']
+        },async (folderPaths) => {
+          // folderPaths is an array that contains all the selected paths
+          if (folderPaths === undefined) {
+            console.log('No destination folder selected')
+            this.$store.dispatch('setDir', "")
+          } else {
+            // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
+            this.$store.dispatch('setDir', folderPaths[0]) // calling the async action which can't modify the state
+            console.log(folderPaths)
+          }
+          await this.sleep(200) // FIXME: not cool
+          await this.init();
+        })
+      },
       showSaveDialog(content) {
         // You can obviously give a direct path without use the dialog (C:/Program Files/path/myfileexample.txt)
         dialog.showSaveDialog((fileName) => {
@@ -172,36 +177,12 @@
           })
         })
       },
-      async selectPositiveGridFolder() {
-        dialog.showOpenDialog({
-          title: 'Select a folder',
-          properties: ['openDirectory']
-        }, (folderPaths) => {
-          // folderPaths is an array that contains all the selected paths
-          if (folderPaths === undefined) {
-            console.log('No destination folder selected')
-            this.$store.dispatch('setDir', "")
-          } else {
-            // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
-            this.$store.dispatch('setDir', folderPaths[
-              0]) // calling the async action which can't modify the state
-            console.log(folderPaths)
-          }
-        })
-
-        await this.init();
-      },
-      showStateStuff() {
-        console.debug(this.$store.state.Directory.isDirSet)
-        if (this.$store.state.Directory.isDirSet) {
-          console.debug(this.$store.state.Directory.dir)
-        }
-        console.debug(this.$store.state.Directory.selectedBankFolder);
-        console.debug(this.$store.state.Directory.contents)
-      },
       async selectBank(folderName) {
         console.debug(folderName);
-        this.$store.dispatch('setBank', folderName);
+        await this.$store.dispatch('setBank', folderName)
+        // .then(()=>{ // not working
+        //   this.init();
+        // });
         await this.sleep(100); // FIXME: not cool
         this.init();
       },
@@ -232,8 +213,7 @@
         })
       },
       async favoriteChange(preset) {
-        let jsonObj = await readfile(this.presetJsonPath, 'utf-8');
-        let jsonQobj = jsonQ(jsonObj);
+        let jsonQobj = await this.getJsonQObject(this.presetJsonPath,'utf-8');
 
         // searching for an entry with out preset id
         let curr = jsonQobj.find('preset_uuid', function () {
@@ -265,28 +245,27 @@
               return;
             } else {
               console.log('result', r);
-              this.changePresetName(r,preset);
+              this.changePresetName(r, preset);
             }
           })
           .catch(console.error);
       },
-      async changePresetName(newName,preset){
-          let jsonObj = await readfile(this.presetJsonPath, 'utf-8');
-          let jsonQobj = jsonQ(jsonObj);
+      async changePresetName(newName, preset) {
+        let jsonQobj = await this.getJsonQObject(this.presetJsonPath,'utf-8');
 
-          // searching for an entry with out preset id
-          let curr = jsonQobj.find('preset_uuid', function () {
-            return this === preset.preset_uuid
-          }).parent();
+        // searching for an entry with out preset id
+        let curr = jsonQobj.find('preset_uuid', function () {
+          return this === preset.preset_uuid
+        }).parent();
 
-          curr.find('preset_name').value(function (name) {
-            return newName;
-          });
+        curr.find('preset_name').value(function (name) {
+          return newName;
+        });
 
-          let updatedContent = JSON.stringify(jsonQobj.value()[0])
-          console.debug(updatedContent)
-          this.updateJson(this.presetJsonPath, updatedContent)
-          this.init();
+        let updatedContent = JSON.stringify(jsonQobj.value()[0])
+        console.debug(updatedContent)
+        this.updateJson(this.presetJsonPath, updatedContent)
+        this.init();
       },
       async changeOrder(dir, preset) {
         if (preset.display_order == 0 && dir == this.direction.UP) {
@@ -297,10 +276,7 @@
           return
         }
 
-        let jsonObj = await readfile(this.presetJsonPath, 'utf-8');
-        // console.debug(jsonObj);
-        var jsonQobj = jsonQ(jsonObj);
-        // console.debug(jsonQobj.value())
+        let jsonQobj = await this.getJsonQObject(this.presetJsonPath,'utf-8');
 
         // finding siblings
         let prev = jsonQobj.find('display_order', function () {
@@ -349,83 +325,6 @@
         this.updateJson(this.presetJsonPath, updatedContent)
         this.init();
       },
-      async updateJson(path, content) {
-        const writefile = util.promisify(fs.writeFile);
-        await writefile(path, content)
-          .catch((err) => {
-            console.log('Error', err);
-            alert(err)
-          });
-      },
-      async listFolder(callback) {
-        const readdir = util.promisify(fs.readdir);
-
-        // fs.readdir(this.directory, (err, dir) => {
-        // for (let filePath of dir) {
-        // console.log(filePath);
-        // }
-        // });
-
-        try {
-          this.contents = await readdir(this.directory) // ls
-        } catch (err) {
-          console.log(err);
-        }
-        if (this.contents === undefined) {
-          console.log('undefined');
-        } else {
-          console.log(this.contents);
-        }
-        // console.debug(this.contents);
-        this.$store.dispatch('setContents', this.contents);
-        // console.debug(cons);
-        // return cons;
-        // return contents;
-        // console.debug("Hello");
-        if (callback != undefined) {
-          callback(); //searchContents
-        }
-      },
-      async searchContents() {
-        // console.debug(this.listFolder())
-        // this.listFolder();
-        await this.sleep(100);
-        console.debug(this.$store.state.Directory.contents)
-        // console.debug(this.contents);
-        // for (let filePath of this.listFolder()) {
-        // console.log(filePath);
-        // }
-      },
-      async getJson(path, identifier) { // Objects are Passed by Reference // Arguments are Passed by Value
-        let jsonObj;
-        try {
-          jsonObj = await readfile(path, 'utf-8');
-          // console.debug(jsonObj);
-        } catch (err) {
-          console.debug("error path invalid")
-          // alert("Error Invalid Path")
-          return;
-        }
-
-        var jsonQobj = jsonQ(jsonObj);
-        // console.debug(jsonQobj.find(identifier).value())
-
-        // getting all elements that have identifier as a property
-        let entries = jsonQobj.find(identifier, function () {
-          // return this >= 5;
-          return this
-        }).parent().value();
-
-        // Clearing the array
-        let result = [];
-
-        for (let b in entries) {
-          result.push(entries[b]);
-        }
-        console.debug(result)
-        console.debug(result.length) // TODO: empty bank case
-        return result;
-      }
     }
   }
 </script>

@@ -1,23 +1,30 @@
+import {
+  resolve
+} from "path";
+
 const state = {
   isDirSet: false,
   dir: String,
   contents: Array,
-  selectedBankFolder : String
+  selectedBankFolder: String
 }
 
 const mutations = {
   SET_DIR(state, {
     dir
   }) {
-    // we do have access to state from here
-    // console.debug("trying to " + dir)
-    // console.debug(state.dir)
-    state.dir = dir;
-    if (dir == "") { // nothing selected
-      state.isDirSet = false;
-    } else {
-      state.isDirSet = true
-    }
+    return new Promise(() => {
+      // we do have access to state from here
+      // console.debug("trying to " + dir)
+      // console.debug(state.dir)
+      state.dir = dir;
+      if (dir == "") { // nothing selected
+        state.isDirSet = false;
+      } else {
+        state.isDirSet = true
+      }
+      resolve()
+    })
   },
   SET_CONTENTS(state, { //not used
     contents
@@ -49,10 +56,15 @@ const actions = {
       'contents': payload
     })
   },
-  setBank({commit},payload){
-    commit('SET_BANK',{
-      'bankFolder' : payload
+  setBank({
+    commit
+  }, payload) {
+    return new Promise((resolve,reject)=>{ // no need for Promises just testing
+    commit('SET_BANK', {
+      'bankFolder': payload
     })
+    resolve();
+  })
   }
 }
 
