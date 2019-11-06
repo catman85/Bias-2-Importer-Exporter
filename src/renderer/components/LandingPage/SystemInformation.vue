@@ -50,12 +50,12 @@
     <button class="alt" @click='listFolder(searchContents)'>list</button>
     <div v-for="p in this.presetsC" :key="p.preset_folder">
       <!-- TODO: favorite rename -->
-      <!-- TODO: platform based paths -->
       <div @click="exportPreset(p.preset_uuid)">
-        {{p.preset_name}}
+
         {{p.display_order}}
         {{p.preset_uuid}}
       </div>
+      <div @click="showNewPresetNamePrompt(p)">{{p.preset_name}}</div>
       <div @click="favoriteChange(p)">
         {{p.is_favorite}}
       </div>
@@ -71,6 +71,9 @@
     mapState,
     mapActions
   } from 'vuex'
+  import {
+    rename
+  } from 'fs';
 
   // require('fs')
   const fs = require('fs-extra')
@@ -81,6 +84,8 @@
   const util = require('util');
 
   const jsonQ = require("jsonq");
+
+  const prompt = require('electron-prompt');
 
   const readfile = util.promisify(fs.readFile);
 
@@ -242,6 +247,46 @@
         let updatedContent = JSON.stringify(jsonQobj.value()[0])
         this.updateJson(this.presetJsonPath, updatedContent)
         this.init();
+      },
+      async showNewPresetNamePrompt(preset) {
+        // let newName = prompt("Please enter the preset's new name: ",preset.preset_name);
+        prompt({
+            title: 'Please enter the preset\'s new name:',
+            label: 'New name:',
+            value: preset.preset_name,
+            inputAttrs: {
+              type: 'name'
+            },
+            type: 'input'
+          })
+          .then((r) => {
+            if (r === null) {
+              console.log('user cancelled');
+              return;
+            } else {
+              console.log('result', r);
+              this.changePresetName(r,preset);
+            }
+          })
+          .catch(console.error);
+      },
+      async changePresetName(newName,preset){
+          let jsonObj = await readfile(this.presetJsonPath, 'utf-8');
+          let jsonQobj = jsonQ(jsonObj);
+
+          // searching for an entry with out preset id
+          let curr = jsonQobj.find('preset_uuid', function () {
+            return this === preset.preset_uuid
+          }).parent();
+
+          curr.find('preset_name').value(function (name) {
+            return newName;
+          });
+
+          let updatedContent = JSON.stringify(jsonQobj.value()[0])
+          console.debug(updatedContent)
+          this.updateJson(this.presetJsonPath, updatedContent)
+          this.init();
       },
       async changeOrder(dir, preset) {
         if (preset.display_order == 0 && dir == this.direction.UP) {
