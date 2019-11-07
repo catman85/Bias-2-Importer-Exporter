@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- {{this.fuckme}} -->
     <div class="title">Information</div>
     <div class="items">
       <div class="item">
@@ -33,6 +34,7 @@
           {{b.bank_name}}
           {{b.display_order}}
         </div>
+        <div @click="importPresets(b)">Import Presets</div>
         <br>
       </div>
       <br>
@@ -141,6 +143,7 @@
       async init() {
         this.banks = await this.getJson(this.directory + this.bankJsonRelPath, 'bank_name')
         this.presets = await this.getJson(this.presetJsonPath, 'preset_name')
+        // TODO: empty bank case
       },
       async selectPositiveGridFolder() {
         dialog.showOpenDialog({
@@ -325,6 +328,9 @@
         this.updateJson(this.presetJsonPath, updatedContent)
         this.init();
       },
+      async importPresets(bank){
+        console.debug(bank.bank_folder)
+      }
     }
   }
 </script>
