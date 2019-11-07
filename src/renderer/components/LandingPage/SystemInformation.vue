@@ -149,14 +149,15 @@
         dialog.showOpenDialog({
           title: 'Select a folder',
           properties: ['openDirectory']
-        },async (folderPaths) => {
+        }, async (folderPaths) => {
           // folderPaths is an array that contains all the selected paths
           if (folderPaths === undefined) {
             console.log('No destination folder selected')
             this.$store.dispatch('setDir', "")
           } else {
             // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
-            this.$store.dispatch('setDir', folderPaths[0]) // calling the async action which can't modify the state
+            this.$store.dispatch('setDir', folderPaths[
+              0]) // calling the async action which can't modify the state
             console.log(folderPaths)
           }
           await this.sleep(200) // FIXME: not cool
@@ -184,7 +185,7 @@
         console.debug(folderName);
         await this.$store.dispatch('setBank', folderName)
         // .then(()=>{ // not working
-        //   this.init();
+        // this.init();
         // });
         await this.sleep(100); // FIXME: not cool
         this.init();
@@ -216,7 +217,7 @@
         })
       },
       async favoriteChange(preset) {
-        let jsonQobj = await this.getJsonQObject(this.presetJsonPath,'utf-8');
+        let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
 
         // searching for an entry with out preset id
         let curr = jsonQobj.find('preset_uuid', function () {
@@ -254,7 +255,7 @@
           .catch(console.error);
       },
       async changePresetName(newName, preset) {
-        let jsonQobj = await this.getJsonQObject(this.presetJsonPath,'utf-8');
+        let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
 
         // searching for an entry with out preset id
         let curr = jsonQobj.find('preset_uuid', function () {
@@ -279,7 +280,7 @@
           return
         }
 
-        let jsonQobj = await this.getJsonQObject(this.presetJsonPath,'utf-8');
+        let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
 
         // finding siblings
         let prev = jsonQobj.find('display_order', function () {
@@ -328,8 +329,22 @@
         this.updateJson(this.presetJsonPath, updatedContent)
         this.init();
       },
-      async importPresets(bank){
+      async importPresets(bank) {
         console.debug(bank.bank_folder)
+        dialog.showOpenDialog({
+          title: 'Select presets to import',
+          properties: ['openDirectory', 'multiSelections']
+        }, async (folderPaths) => {
+          // folderPaths is an array that contains all the selected paths
+          if (folderPaths === undefined) {
+            console.log('No preset folders selected')
+          } else {
+            console.log(folderPaths)
+            // TODO: grab folders' names
+            // TODO: copy folder to bank.bank_folder
+            // TODO: enter bank folder and append a new entry in presets.json
+          }
+        })
       }
     }
   }

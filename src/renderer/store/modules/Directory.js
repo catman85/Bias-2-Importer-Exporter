@@ -1,5 +1,3 @@
-// import { resolve } from "path";
-
 const state = {
   isDirSet: false,
   dir: String,
@@ -9,6 +7,7 @@ const state = {
 
 const mutations = {
   SET_DIR(state, {dir}) {
+    // return new Promise((res,rej)=>{
       // we do have access to state from here
       // console.debug(state.dir)
       state.dir = dir;
@@ -17,6 +16,8 @@ const mutations = {
       } else {
         state.isDirSet = true
       }
+      // resolve()
+    // })
   },
   SET_CONTENTS(state, {contents}) { // not used
     state.contents = contents
