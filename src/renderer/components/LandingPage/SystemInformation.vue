@@ -35,6 +35,7 @@
           {{b.display_order}}
         </div>
         <div @click="importPresets(b)">Import Presets</div>
+        <div @click="showNewNamePrompt(b)">rename bank</div>
         <br>
       </div>
       <br>
@@ -57,7 +58,7 @@
         {{p.display_order}}
         {{p.preset_uuid}}
       </div>
-      <div @click="showNewPresetNamePrompt(p)">{{p.preset_name}}</div>
+      <div @click="showNewNamePrompt(p)">{{p.preset_name}}</div>
       <div @click="favoriteChange(p)">
         {{p.is_favorite}}
       </div>
@@ -96,6 +97,10 @@
           "UP": 0,
           "DOWN": 1
         }),
+        objType: Object.freeze({
+          "BANK": 0,
+          "PRESET": 1
+        })
         // filePathJson: '/home/jim/Documents/bank.json', // String
       }
     },
@@ -200,8 +205,8 @@
           if (folderPaths === undefined) {
             console.log('No destination folder selected')
           } else {
-            let selectedPresetPath = this.selectedBankPath + '/' + uuid;
-            let destination = folderPaths[0] + '/' + uuid
+            let selectedPresetPath = this.nativePath(this.selectedBankPath + '/' + uuid);
+            let destination = this.nativePath(folderPaths[0] + '/' + uuid);
             console.debug(selectedPresetPath);
             console.log(destination)
 
@@ -232,12 +237,23 @@
         this.updateJson(this.presetJsonPath, updatedContent)
         this.init();
       },
-      async showNewPresetNamePrompt(preset) {
-        // let newName = prompt("Please enter the preset's new name: ",preset.preset_name);
+      async showNewNamePrompt(obj) {
+        // figuring out the type of the object
+        let type, title, oldValue
+        if(obj.preset_name){
+          type = this.objType.PRESET;
+          title = 'preset\'s';
+          oldValue = obj.preset_name;
+        }else{
+          type = this.objType.BANK;
+          title = 'bank\'s';
+          oldValue = obj.bank_name;
+        }
+
         prompt({
-            title: 'Please enter the preset\'s new name:',
+            title: 'Please enter the '+title+' new name:',
             label: 'New name:',
-            value: preset.preset_name,
+            value: oldValue,
             inputAttrs: {
               type: 'name'
             },
@@ -249,26 +265,40 @@
               return;
             } else {
               console.log('result', r);
-              this.changePresetName(r, preset);
+              this.changeName(r, obj, type);
             }
           })
           .catch(console.error);
       },
-      async changePresetName(newName, preset) {
-        let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
+      async changeName(newName, obj, type) {
+        let curr, id, idAttribute, nameAttribute, path
+        if(type === this.objType.PRESET){
+          id = obj.preset_uuid
+          idAttribute = 'preset_uuid'
+          nameAttribute = 'preset_name'
+          path = this.presetJsonPath
+        }else{
+          
+          id = obj.bank_folder
+          idAttribute = 'bank_folder'
+          nameAttribute = 'bank_name'
+          path = this.directory + this.bankJsonRelPath
+        }
+
+        let jsonQobj = await this.getJsonQObject(path, 'utf-8');
 
         // searching for an entry with out preset id
-        let curr = jsonQobj.find('preset_uuid', function () {
-          return this === preset.preset_uuid
+        curr = jsonQobj.find(idAttribute, function () {
+          return this === id
         }).parent();
 
-        curr.find('preset_name').value(function (name) {
+        curr.find(nameAttribute).value(function (name) {
           return newName;
         });
 
         let updatedContent = JSON.stringify(jsonQobj.value()[0])
         console.debug(updatedContent)
-        this.updateJson(this.presetJsonPath, updatedContent)
+        this.updateJson(path, updatedContent)
         this.init();
       },
       async changeOrder(dir, preset) {
