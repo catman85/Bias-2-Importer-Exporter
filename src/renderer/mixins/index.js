@@ -42,6 +42,10 @@ const myMixins = {
             // console.debug("changing Path: " + path + platform)
             return path;
         },
+        getLastPartOfPath(path) {
+            // works for both win and mac
+            return path.split('\\').pop().split('/').pop();
+        },
         async listFolder(dirPath, callback) {
             const readdir = util.promisify(fs.readdir);
 
@@ -62,7 +66,7 @@ const myMixins = {
                 console.log(contents);
             }
             // console.debug(this.contents);
-            this.$store.dispatch('setContents', contents);
+            // this.$store.dispatch('setContents', contents);
             // console.debug(cons);
             // return cons;
             // return contents;
@@ -72,7 +76,10 @@ const myMixins = {
             }
         },
         async getJson(path, identifier) { // Objects are Passed by Reference // Arguments are Passed by Value
-            let jsonQobj = await this.getJsonQObject(path,'utf-8')
+            // Clearing the array
+            let result = [];
+
+            let jsonQobj = await this.getJsonQObject(path, 'utf-8')
             // console.debug(jsonQobj.find(identifier).value())
 
             // getting all elements that have identifier as a property
@@ -80,9 +87,6 @@ const myMixins = {
                 // return this >= 5;
                 return this
             }).parent().value();
-
-            // Clearing the array
-            let result = [];
 
             for (let b in entries) {
                 result.push(entries[b]);
@@ -94,20 +98,43 @@ const myMixins = {
         async updateJson(path, content) {
             const writefile = util.promisify(fs.writeFile);
             await writefile(path, content)
-              .catch((err) => {
-                console.log('Error', err);
-                alert(err)
-              });
-          },
-          async getJsonQObject(path,encoding){
+                .catch((err) => {
+                    console.log('Error', err);
+                    alert(err)
+                });
+        },
+        async getJsonQObject(path, encoding) {
             let jsonObj = await readfile(path, encoding)
-            .catch((err)=>{
-                console.debug('Error',err)
-                alert(err)
-            })
+                .catch((err) => {
+                    console.debug('Error', err)
+                    alert(err)
+                })
 
             return jsonQ(jsonObj);
-          }
+        },
+        checkIfDirectoriesExists: function (...paths) {
+            console.debug(paths)
+            let bool = true
+            for (let i in paths) {
+                if (fs.existsSync(paths[i])) { // this.directory + this.bankJsonRelPath
+                    console.debug('Found file');
+                } else {
+                    console.debug("Didn't find file, exiting");
+                    bool = false;
+                    break;
+                }
+            }
+            return bool
+        },
+        async copyFromTo(source, dest) {
+            // copies directory, even if it has subdirectories or files
+            fs.copy(source, dest, {
+                overwrite: true
+            }, err => {
+                if (err) return console.error(err)
+                console.log('success!')
+            })
+        }
     }
 }
 

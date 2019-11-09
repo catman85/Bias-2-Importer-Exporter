@@ -1,6 +1,12 @@
 <template>
   <div>
-    <!-- {{this.fuckme}} -->
+    Is dir set? {{isDirSet}}<br>
+    is dir legit? {{checkMainDirectoryValidity}}<br>
+    Dir: {{directory}}<br>
+    <div v-if="checkMainDirectoryValidity">
+      Selected Bank Path: {{selectedBankPath}}<br>
+      Preset Json Path: {{presetJsonPath}}<br>
+    </div>
     <div class="title">Information</div>
     <div class="items">
       <div class="item">
@@ -28,7 +34,7 @@
         <div class="value">{{ platform }}</div>
       </div>
     </div>
-    <div v-if="checkDirectory">
+    <div v-if="checkMainDirectoryValidity">
       <div v-for="b in this.banksC" :key="b.bank_folder">
         <div @click="selectBank(b.bank_folder)">
           {{b.bank_name}}
@@ -40,13 +46,6 @@
       </div>
       <br>
     </div>
-    Is dir set? {{isDirSet}}<br>
-    Dir: {{directory}}<br>
-    is dir legit? {{checkDirectory}}<br>
-    <!-- <div v-if="checkDirectory"> -->
-    Selected Bank Path {{selectedBankPath}}<br>
-    Preset Json Path: {{presetJsonPath}}<br>
-    <!-- </div> -->
     <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
@@ -108,7 +107,6 @@
           "BANK": 0,
           "PRESET": 1
         })
-        // filePathJson: '/home/jim/Documents/bank.json', // String
       }
     },
     mounted() {
@@ -128,20 +126,14 @@
           return this.nativePath(this.docPath + "/PositiveGrid");
         }
       },
+      checkMainDirectoryValidity: function () {
+        return this.checkIfDirectoriesExists(this.directory + this.bankJsonRelPath)
+      },
       banksC: function () {
         return this.banks;
       },
       presetsC: function () {
         return this.presets;
-      },
-      checkDirectory: function () {
-        if (fs.existsSync(this.directory + this.bankJsonRelPath)) {
-          console.debug('Found file');
-          return true;
-        } else {
-          console.debug("Didn't find file");
-          return false;
-        }
       },
       presetJsonPath: function () {
         return this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder +
@@ -166,7 +158,8 @@
             console.log('No destination folder selected')
             this.$store.dispatch('setDir', "")
           } else {
-            // this.$store.dispatch('SET_DIR', {dir}); // we can't call the mutation directly which can modify the state
+            // this.$store.dispatch('SET_DIR', {dir}); 
+            // we can't call the mutation directly which can modify the state
             this.$store.dispatch('setDir', folderPaths[
               0]) // calling the async action which can't modify the state
             console.log(folderPaths)
@@ -210,20 +203,14 @@
           // folderPaths is an array that contains all the selected paths
           if (folderPaths === undefined) {
             console.log('No destination folder selected')
+            return;
           } else {
             let selectedPresetPath = this.nativePath(this.selectedBankPath + '/' + uuid);
             let destination = this.nativePath(folderPaths[0] + '/' + uuid);
             console.debug(selectedPresetPath);
             console.log(destination)
 
-            // copies directory, even if it has subdirectories or files
-            fs.copy(selectedPresetPath, destination, {
-              overwrite: true
-            }, err => {
-              if (err) return console.error(err)
-
-              console.log('success!')
-            })
+            this.copyFromTo(selectedPresetPath, destination)
           }
         })
       },
@@ -373,11 +360,21 @@
           // folderPaths is an array that contains all the selected paths
           if (folderPaths === undefined) {
             console.log('No preset folders selected')
+            return;
           } else {
-            console.log(folderPaths)
-            // TODO: grab folders' names
-            // TODO: copy folder to bank.bank_folder
-            // TODO: enter bank folder and append a new entry in presets.json
+            for (let path in folderPaths) {
+              let pathData = this.nativePath(folderPaths[path] + '/data.json')
+              let pathMeta = this.nativePath(folderPaths[path] + '/meta.json')
+              if (!this.checkIfDirectoriesExists(pathData, pathMeta)) {
+                alert("Invalid Preset Folder: " + folderPaths[path])
+                continue;
+              }
+              let newUUID = this.getLastPartOfPath(folderPaths[path])
+              console.debug("Importing Preset... " + newUUID)
+              let dest = this.nativePath(this.selectedBankPath + '/' + newUUID)
+              await this.copyFromTo(folderPaths[path], dest)
+              // TODO: enter bank folder and append a new entry in presets.json
+            }
           }
         })
       }
