@@ -51,20 +51,27 @@
     <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
     <button class="alt" @click='listFolder(directory)'>list</button>
-    <div v-for="p in this.presetsC" :key="p.preset_folder">
-      <!-- TODO: favorite rename -->
-      <div @click="exportPreset(p.preset_uuid)">
 
-        {{p.display_order}}
-        {{p.preset_uuid}}
+    <div v-if="this.presetsC.length">
+      <div v-for="p in this.presetsC" :key="p.preset_folder">
+        <!-- TODO: move to bank -->
+        <div @click="exportPreset(p.preset_uuid)">
+
+          {{p.display_order}}
+          {{p.preset_uuid}}
+        </div>
+        <div @click="showNewNamePrompt(p)">{{p.preset_name}}</div>
+        <div @click="favoriteChange(p)">
+          {{p.is_favorite}}
+        </div>
+        <div @click="changeOrder(direction.UP,p)">UP</div>
+        <div @click="changeOrder(direction.DOWN,p)">DOWN</div>
+        <br>
       </div>
-      <div @click="showNewNamePrompt(p)">{{p.preset_name}}</div>
-      <div @click="favoriteChange(p)">
-        {{p.is_favorite}}
-      </div>
-      <div @click="changeOrder(direction.UP,p)">UP</div>
-      <div @click="changeOrder(direction.DOWN,p)">DOWN</div>
+    </div>
+    <div v-else>
       <br>
+      <p>No presets in this folder</p>
     </div>
   </div>
 </template>
@@ -148,7 +155,6 @@
       async init() {
         this.banks = await this.getJson(this.directory + this.bankJsonRelPath, 'bank_name')
         this.presets = await this.getJson(this.presetJsonPath, 'preset_name')
-        // TODO: empty bank case
       },
       async selectPositiveGridFolder() {
         dialog.showOpenDialog({
@@ -240,18 +246,18 @@
       async showNewNamePrompt(obj) {
         // figuring out the type of the object
         let type, title, oldValue
-        if(obj.preset_name){
+        if (obj.preset_name) {
           type = this.objType.PRESET;
           title = 'preset\'s';
           oldValue = obj.preset_name;
-        }else{
+        } else {
           type = this.objType.BANK;
           title = 'bank\'s';
           oldValue = obj.bank_name;
         }
 
         prompt({
-            title: 'Please enter the '+title+' new name:',
+            title: 'Please enter the ' + title + ' new name:',
             label: 'New name:',
             value: oldValue,
             inputAttrs: {
@@ -272,13 +278,12 @@
       },
       async changeName(newName, obj, type) {
         let curr, id, idAttribute, nameAttribute, path
-        if(type === this.objType.PRESET){
+        if (type === this.objType.PRESET) {
           id = obj.preset_uuid
           idAttribute = 'preset_uuid'
           nameAttribute = 'preset_name'
           path = this.presetJsonPath
-        }else{
-          
+        } else {
           id = obj.bank_folder
           idAttribute = 'bank_folder'
           nameAttribute = 'bank_name'
