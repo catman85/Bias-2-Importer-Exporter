@@ -373,6 +373,7 @@
               console.debug("Importing Preset... " + newUUID)
               let dest = this.nativePath(this.selectedBankPath + '/' + newUUID)
               await this.copyFromTo(folderPaths[path], dest)
+              // TODO: make a separate function for this
               // TODO: enter bank folder and append a new entry in presets.json
             }
           }
