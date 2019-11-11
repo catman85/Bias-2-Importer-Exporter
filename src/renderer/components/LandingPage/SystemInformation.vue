@@ -40,7 +40,7 @@
           {{b.bank_name}}
           {{b.display_order}}
         </div>
-        <div @click="importPresets(b)">Import Presets</div>
+        <div @click="selectPresetsDialog(b)">Import Presets</div>
         <div @click="showNewNamePrompt(b)">rename bank</div>
         <br>
       </div>
@@ -351,7 +351,7 @@
         this.updateJson(this.presetJsonPath, updatedContent)
         this.init();
       },
-      async importPresets(bank) {
+      async selectPresetsDialog(bank) {
         console.debug(bank.bank_folder)
         dialog.showOpenDialog({
           title: 'Select presets to import',
@@ -363,21 +363,26 @@
             return;
           } else {
             for (let path in folderPaths) {
-              let pathData = this.nativePath(folderPaths[path] + '/data.json')
-              let pathMeta = this.nativePath(folderPaths[path] + '/meta.json')
-              if (!this.checkIfDirectoriesExists(pathData, pathMeta)) {
-                alert("Invalid Preset Folder: " + folderPaths[path])
-                continue;
+              if(!this.importPreset(folderPaths[path])){
+                  continue;
               }
-              let newUUID = this.getLastPartOfPath(folderPaths[path])
-              console.debug("Importing Preset... " + newUUID)
-              let dest = this.nativePath(this.selectedBankPath + '/' + newUUID)
-              await this.copyFromTo(folderPaths[path], dest)
-              // TODO: make a separate function for this
-              // TODO: enter bank folder and append a new entry in presets.json
             }
           }
         })
+      },
+      async importPreset(path) {
+        let pathMeta = this.nativePath(path + '/meta.json')
+        let pathData = this.nativePath(path + '/data.json')
+        if (!this.checkIfDirectoriesExists(pathData, pathMeta)) {
+          alert("Invalid Preset Folder: " + path)
+          return false;
+        }
+        let newUUID = this.getLastPartOfPath(path)
+        console.debug("Importing Preset... " + newUUID)
+        let dest = this.nativePath(this.selectedBankPath + '/' + newUUID)
+        await this.copyFromTo(path, dest)
+        return true;
+        // TODO: enter bank folder and append a new entry in presets.json
       }
     }
   }
