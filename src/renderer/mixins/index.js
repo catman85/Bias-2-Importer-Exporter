@@ -95,7 +95,8 @@ const myMixins = {
             // console.debug(result.length)
             return result;
         },
-        async updateJson(path, content) {
+        async updateJson(path, jsonQobj) {
+            let content = JSON.stringify(jsonQobj.value()[0])
             const writefile = util.promisify(fs.writeFile);
             await writefile(path, content)
                 .catch((err) => {

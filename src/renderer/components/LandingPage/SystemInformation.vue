@@ -226,8 +226,7 @@
           return !bool;
         });
 
-        let updatedContent = JSON.stringify(jsonQobj.value()[0])
-        this.updateJson(this.presetJsonPath, updatedContent)
+        this.updateJson(this.presetJsonPath, jsonQobj)
         this.init();
       },
       async showNewNamePrompt(obj) {
@@ -288,9 +287,7 @@
           return newName;
         });
 
-        let updatedContent = JSON.stringify(jsonQobj.value()[0])
-        console.debug(updatedContent)
-        this.updateJson(path, updatedContent)
+        this.updateJson(path, jsonQobj)
         this.init();
       },
       async changeOrder(dir, preset) {
@@ -347,8 +344,7 @@
         jsonQobj.sort('display_order')
 
         // console.debug(jsonQobj.value()[0]);
-        let updatedContent = JSON.stringify(jsonQobj.value()[0])
-        this.updateJson(this.presetJsonPath, updatedContent)
+        this.updateJson(this.presetJsonPath, jsonQobj)
         this.init();
       },
       async selectPresetsDialog(bank) {
@@ -394,7 +390,9 @@
           "preset_uuid": newUUID
         }
 
-        console.debug(newEntry)
+        currBankQobj.find('LivePresets').append(newEntry);
+
+        console.debug(currBankQobj.value())
         return true;
         // TODO: enter bank folder and append a new entry in presets.json
       }
