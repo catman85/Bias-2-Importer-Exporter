@@ -380,7 +380,11 @@
         let newUUID = this.getLastPartOfPath(path)
         console.debug("Importing Preset... " + newUUID)
         let dest = this.nativePath(this.selectedBankPath + '/' + newUUID)
-        await this.copyFromTo(path, dest)
+        // await this.copyFromTo(path, dest)
+        let newPreQobj = await this.getJsonQObject(pathMeta,'utf-8')
+        let newPresetName = newPreQobj.find('name').value()[0]
+        
+        let currBankQobj = await this.getJsonQObject(this.presetJsonPath,'utf-8')
         return true;
         // TODO: enter bank folder and append a new entry in presets.json
       }
