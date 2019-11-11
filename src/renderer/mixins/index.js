@@ -118,9 +118,10 @@ const myMixins = {
             let bool = true
             for (let i in paths) {
                 if (fs.existsSync(paths[i])) { // this.directory + this.bankJsonRelPath
-                    console.debug('Found file');
+                    // console.debug('Found file');
                 } else {
                     console.debug("Didn't find file, exiting");
+                    // return false;
                     bool = false;
                     break;
                 }

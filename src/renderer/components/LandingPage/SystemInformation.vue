@@ -357,7 +357,7 @@
             console.log('No preset folders selected')
             return;
           } else {
-            var funct = this.importPreset 
+            var funct = this.importPreset
             // func reference accessible in nameless func
             // problems with closures if we use importPreset directly it wont work
             this.asyncForEach(folderPaths,
@@ -369,24 +369,27 @@
         })
       },
       async importPreset(path, bank) {
-        console.debug(bank.bank_folder)
         let pathMeta = this.nativePath(path + '/meta.json')
         let pathData = this.nativePath(path + '/data.json')
+
         if (!this.checkIfDirectoriesExists(pathData, pathMeta)) {
           alert("Invalid Preset Folder: " + path)
           return false;
         }
         let newUUID = this.getLastPartOfPath(path)
-        console.debug("Importing Preset... " + newUUID)
+        let selBankPath = this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + bank.bank_folder)
+        let presetJsonPathSelBank = this.nativePath(selBankPath + '/preset.json');
+        let dest = this.nativePath(selBankPath + '/' + newUUID)
 
-        let dest = this.nativePath(this.selectedBankPath + '/' + newUUID)
+        console.debug("Importing Preset... " + newUUID)
+        console.debug("To json file ... " + presetJsonPathSelBank)
+        console.debug("Copying from: " + path + " to " + dest)
         await this.copyFromTo(path, dest)
 
         let newPreQobj = await this.getJsonQObject(pathMeta, 'utf-8')
         let newPresetName = newPreQobj.find('name').value()[0]
 
-        // TODO: dont use presetJsonPath use the b object instead
-        let currBankQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8')
+        let currBankQobj = await this.getJsonQObject(presetJsonPathSelBank, 'utf-8')
         let newDisplayOrder = currBankQobj.find('LivePresets').value()[0].length;
 
         let newEntry = {
