@@ -348,7 +348,6 @@
         this.init();
       },
       async selectPresetsDialog(bank) {
-        console.debug(bank.bank_folder)
         dialog.showOpenDialog({
           title: 'Select presets to import',
           properties: ['openDirectory', 'multiSelections']
@@ -358,15 +357,19 @@
             console.log('No preset folders selected')
             return;
           } else {
-            for (let path in folderPaths) {
-              if (!this.importPreset(folderPaths[path])) {
-                continue;
-              }
-            }
+            var funct = this.importPreset 
+            // func reference accessible in nameless func
+            // problems with closures if we use importPreset directly it wont work
+            this.asyncForEach(folderPaths,
+              async function (path) {
+                // console.debug(path)
+                await funct(path, bank)
+              });
           }
         })
       },
-      async importPreset(path) {
+      async importPreset(path, bank) {
+        console.debug(bank.bank_folder)
         let pathMeta = this.nativePath(path + '/meta.json')
         let pathData = this.nativePath(path + '/data.json')
         if (!this.checkIfDirectoriesExists(pathData, pathMeta)) {
@@ -375,11 +378,14 @@
         }
         let newUUID = this.getLastPartOfPath(path)
         console.debug("Importing Preset... " + newUUID)
+
         let dest = this.nativePath(this.selectedBankPath + '/' + newUUID)
-        // await this.copyFromTo(path, dest)
+        await this.copyFromTo(path, dest)
+
         let newPreQobj = await this.getJsonQObject(pathMeta, 'utf-8')
         let newPresetName = newPreQobj.find('name').value()[0]
-        
+
+        // TODO: dont use presetJsonPath use the b object instead
         let currBankQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8')
         let newDisplayOrder = currBankQobj.find('LivePresets').value()[0].length;
 
@@ -391,10 +397,11 @@
         }
 
         currBankQobj.find('LivePresets').append(newEntry);
-
         console.debug(currBankQobj.value())
+
+        await this.updateJson(this.presetJsonPath, currBankQobj)
+        this.init()
         return true;
-        // TODO: enter bank folder and append a new entry in presets.json
       }
     }
   }
