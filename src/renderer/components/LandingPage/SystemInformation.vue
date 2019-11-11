@@ -363,8 +363,8 @@
             return;
           } else {
             for (let path in folderPaths) {
-              if(!this.importPreset(folderPaths[path])){
-                  continue;
+              if (!this.importPreset(folderPaths[path])) {
+                continue;
               }
             }
           }
@@ -381,10 +381,20 @@
         console.debug("Importing Preset... " + newUUID)
         let dest = this.nativePath(this.selectedBankPath + '/' + newUUID)
         // await this.copyFromTo(path, dest)
-        let newPreQobj = await this.getJsonQObject(pathMeta,'utf-8')
+        let newPreQobj = await this.getJsonQObject(pathMeta, 'utf-8')
         let newPresetName = newPreQobj.find('name').value()[0]
         
-        let currBankQobj = await this.getJsonQObject(this.presetJsonPath,'utf-8')
+        let currBankQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8')
+        let newDisplayOrder = currBankQobj.find('LivePresets').value()[0].length;
+
+        let newEntry = {
+          "display_order": newDisplayOrder,
+          "is_favorite": false,
+          "preset_name": newPresetName,
+          "preset_uuid": newUUID
+        }
+
+        console.debug(newEntry)
         return true;
         // TODO: enter bank folder and append a new entry in presets.json
       }
