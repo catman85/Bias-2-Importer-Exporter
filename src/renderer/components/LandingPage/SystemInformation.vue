@@ -290,13 +290,26 @@
           idAttribute = 'preset_uuid'
           nameAttribute = 'preset_name'
           path = this.presetJsonPath
-          // TODO: we also need to modify meta.json
         } else {
           id = obj.bank_folder
           idAttribute = 'bank_folder'
           nameAttribute = 'bank_name'
           path = this.directory + this.bankJsonRelPath
         }
+        
+        if (type === this.objType.PRESET) {
+          let metaPath = this.nativePath(this.selectedBankPath + '/' + obj.preset_uuid + '/meta.json')
+          if(!this.checkIfDirectoriesExists(metaPath)){
+            alert("meta.json file for: " + obj.preset_name + " not found in: " + metaPath)
+            return;
+          }
+          let metaQobj = await this.getJsonQObject(metaPath,'utf-8');
+          metaQobj.find('name').value(()=>{
+            return newName;
+          })
+          await this.updateJson(metaPath,metaQobj);
+        }
+
 
         let jsonQobj = await this.getJsonQObject(path, 'utf-8');
 
