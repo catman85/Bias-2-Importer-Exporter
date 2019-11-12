@@ -191,7 +191,7 @@
         // .then(()=>{ // not working
         // this.init();
         // });
-        await this.sleep(100); // FIXME: not cool
+        await this.sleep(200); // FIXME: not cool
         this.init();
       },
       async exportPreset(uuid) {
@@ -216,8 +216,10 @@
       },
       async favoriteChange(preset) {
         let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
+        let bankQobj = await this.getJsonQObject(this.directory + this.bankJsonRelPath, 'utf-8');
+        let favorites = bankQobj.find('Favorites').value()[0]
 
-        // searching for an entry with out preset id
+        // searching for an entry with our preset id
         let curr = jsonQobj.find('preset_uuid', function () {
           return this === preset.preset_uuid
         }).parent();
@@ -226,7 +228,26 @@
           return !bool;
         });
 
-        this.updateJson(this.presetJsonPath, jsonQobj)
+        // we also need to modify the bank.json file
+        if (curr.find('is_favorite').value()[0]) {
+          // if it just became a fav
+          bankQobj.find('Favorites').append(preset.preset_uuid)
+        } else {
+          // if it was just removed from fav
+          let newFav = favorites.filter((value, index, array) => {
+            if (value != preset.preset_uuid) {
+              return value
+            }
+          })
+          // removing the entry from bank.json
+          bankQobj.find('Favorites').value((val) => {
+            return newFav;
+          })
+        }
+
+        console.debug(bankQobj.value()[0])
+        await this.updateJson(this.directory + this.bankJsonRelPath, bankQobj)
+        await this.updateJson(this.presetJsonPath, jsonQobj)
         this.init();
       },
       async showNewNamePrompt(obj) {
@@ -269,6 +290,7 @@
           idAttribute = 'preset_uuid'
           nameAttribute = 'preset_name'
           path = this.presetJsonPath
+          // TODO: we also need to modify meta.json
         } else {
           id = obj.bank_folder
           idAttribute = 'bank_folder'
@@ -290,7 +312,7 @@
         this.updateJson(path, jsonQobj)
         this.init();
       },
-      async changeOrder(dir, preset) {
+      async changeOrder(dir, preset) { // useless
         if (preset.display_order == 0 && dir == this.direction.UP) {
           console.debug("Can't go up")
           return
