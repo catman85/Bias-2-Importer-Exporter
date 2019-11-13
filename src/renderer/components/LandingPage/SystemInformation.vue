@@ -2,7 +2,7 @@
   <div>
     Is dir set? {{isDirSet}}<br>
     is dir legit? {{checkMainDirectoryValidity}}<br>
-    Dir: {{directory}}<br>
+    Dir: {{positiveGridParh}}<br>
     <div v-if="checkMainDirectoryValidity">
       Selected Bank Path: {{selectedBankPath}}<br>
       Preset Json Path: {{presetJsonPath}}<br>
@@ -35,7 +35,7 @@
       </div>
     </div>
     <div v-if="checkMainDirectoryValidity">
-      <div v-for="b in this.banksC" :key="b.bank_folder">
+      <div v-for="b in this.banks" :key="b.bank_folder">
         <div @click="selectBank(b.bank_folder)">
           {{b.bank_name}}
           {{b.display_order}}
@@ -48,17 +48,17 @@
     </div>
     <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
-    <button class="alt" @click='listFolder(directory)'>list</button>
+    <button class="alt" @click='listFolder(positiveGridParh)'>list</button>
 
-    <div v-if="this.presetsC.length">
-      <div v-for="p in this.presetsC" :key="p.preset_folder">
+    <div v-if="this.presets.length">
+      <div v-for="p in this.presets" :key="p.preset_folder">
         <!-- TODO: move to bank -->
         <b-dropdown dropright size="sm" variant="outline-primary">
           <template v-slot:button-content>
             <strong>Move</strong> to <em>bank</em>
           </template>
           <!-- ATTENTION if you use this.banksC it won't work -->
-          <b-dropdown-item show v-for="b in banksC" :key="b.bank_folder" @click='movePresetTo(b,p)'>
+          <b-dropdown-item show v-for="b in banks" :key="b.bank_folder" @click='movePresetTo(b,p)'>
             {{b.bank_name}}
           </b-dropdown-item>
         </b-dropdown>
@@ -70,6 +70,7 @@
         <div @click="favoriteChange(p)">
           {{p.is_favorite}}
         </div>
+        <div @click="deletePreset(p)">DELETE</div>
         <div @click="changeOrder(direction.UP,p)">UP</div>
         <div @click="changeOrder(direction.DOWN,p)">DOWN</div>
         <br>
@@ -129,11 +130,14 @@
     },
     computed: {
       ...mapState({
-        count: state => state.Counter.main,
+        count: state => state.Counter.main, // just for educational purposes
         isDirSet: state => state.Directory.isDirSet,
-        selectedBankFolder: state => state.Directory.selectedBankFolder
+        selectedBankFolder: (state) => {
+          // this.init()
+          return state.Directory.selectedBankFolder
+        }
       }),
-      directory: function () {
+      positiveGridParh: function () {
         if (this.$store.state.Directory.isDirSet) {
           return this.$store.state.Directory.dir;
         } else {
@@ -141,25 +145,24 @@
         }
       },
       checkMainDirectoryValidity: function () {
-        return this.checkIfDirectoriesExists(this.directory + this.bankJsonRelPath)
-      },
-      banksC: function () {
-        return this.banks;
-      },
-      presetsC: function () {
-        return this.presets;
+        return this.checkIfDirectoriesExists(this.positiveGridParh + this.bankJsonRelPath)
       },
       presetJsonPath: function () {
-        return this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder +
+        return this.nativePath(this.positiveGridParh + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder +
           '/preset.json');
       },
       selectedBankPath: function () {
-        return this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
+        this.init() // ATTENTION everytime the main dir or selected bank is changed we trigger an UI change
+        return this.nativePath(this.positiveGridParh + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
       }
     },
     methods: {
       async init() {
-        this.banks = await this.getJson(this.directory + this.bankJsonRelPath, 'bank_name')
+        console.debug("Init running")
+        // these cause a flash
+        // this.banks = []
+        // this.presets = []
+        this.banks = await this.getJson(this.positiveGridParh + this.bankJsonRelPath, 'bank_name')
         this.presets = await this.getJson(this.presetJsonPath, 'preset_name')
       },
       async selectPositiveGridFolder() {
@@ -170,31 +173,26 @@
           // folderPaths is an array that contains all the selected paths
           if (folderPaths === undefined) {
             console.log('No destination folder selected')
+            // triggers init()
             this.$store.dispatch('setDir', "")
           } else {
-            // this.$store.dispatch('SET_DIR', {dir}); 
             // we can't call the mutation directly which can modify the state
-            if(this.checkIfDirectoriesExists(folderPaths[0] + this.bankJsonRelPath)){
-              this.$store.dispatch('setDir', folderPaths[0]) 
-            }else{
+            if (this.checkIfDirectoriesExists(folderPaths[0] + this.bankJsonRelPath)) {
+              await this.$store.dispatch('setDir', folderPaths[0])
+            } else {
               alert("This is not a Positive Grid folder")
-              this.$store.dispatch('setDir', "")
+              await this.$store.dispatch('setDir', "")
             }
-            // calling the async action which can't modify the state
+            // await this.$store.dispatch('setDir', folderPaths[0])
             console.log(folderPaths)
           }
-          await this.sleep(200) // FIXME: not cool
-          await this.init();
         })
       },
       async selectBank(folderName) {
+        // const dispatch = util.promisify(this.$store.dispatch);
         console.debug(folderName);
-        await this.$store.dispatch('setBank', folderName)
-        // .then(()=>{ // not working
-        // this.init();
-        // });
-        await this.sleep(200); // FIXME: not cool
-        this.init();
+        // triggers init()
+        this.$store.dispatch('setBank', folderName)
       },
       async exportPreset(uuid) {
         console.debug(uuid);
@@ -231,7 +229,7 @@
             this.deletePreset(preset)
           })
           .catch((err) => {
-            console.error("3")
+            // console.error("3")
             return this.errorExit(err)
           })
 
@@ -252,17 +250,24 @@
         jsonQobj.find('LivePresets').value((val) => {
           return oneMissingPreset;
         })
+        console.debug("One Missing Preset: " + preset.preset_name)
         console.debug(jsonQobj.find('LivePresets').value()[0])
 
         await this.updateJson(this.presetJsonPath, jsonQobj)
+          .then(res => {
+            this.remove(presetPath)
+          })
+          .then(res => {
+            this.init();
+          })
           .catch(err => {
             return this.errorExit(err)
           });
-        await this.remove(presetPath)
+
       },
       async favoriteChange(preset) {
         let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
-        let bankQobj = await this.getJsonQObject(this.directory + this.bankJsonRelPath, 'utf-8');
+        let bankQobj = await this.getJsonQObject(this.positiveGridParh + this.bankJsonRelPath, 'utf-8');
         let favorites = bankQobj.find('Favorites').value()[0]
 
         // searching for an entry with our preset id
@@ -293,7 +298,7 @@
 
         console.debug(bankQobj.value()[0])
         await this.updateJson(this.presetJsonPath, jsonQobj)
-        await this.updateJson(this.directory + this.bankJsonRelPath, bankQobj)
+        await this.updateJson(this.positiveGridParh + this.bankJsonRelPath, bankQobj)
         this.init();
       },
       async showNewNamePrompt(obj) {
@@ -340,7 +345,7 @@
           id = obj.bank_folder
           idAttribute = 'bank_folder'
           nameAttribute = 'bank_name'
-          path = this.directory + this.bankJsonRelPath
+          path = this.positiveGridParh + this.bankJsonRelPath
         }
 
         if (type === this.objType.PRESET) {
@@ -459,7 +464,7 @@
           return this.errorExit("bad preset folder")
         }
         let newUUID = this.getLastPartOfPath(path)
-        let selBankPath = this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + bank.bank_folder)
+        let selBankPath = this.nativePath(this.positiveGridParh + '/BIAS_FX2/GlobalPresets/' + bank.bank_folder)
         let presetJsonPathSelBank = this.nativePath(selBankPath + '/preset.json');
         let dest = this.nativePath(selBankPath + '/' + newUUID)
 
@@ -468,8 +473,8 @@
         if (importType == this.importType.COPY) {
           console.debug("Copying from: " + path + " to " + dest)
           await this.copyFromTo(path, dest).catch(err => {
-            console.error("2")
-            return this.errorExit(err)
+            console.error("error from import preset")
+            return this.errorExit(err) // this needs the await in mama function to work
           })
         } else { // unused
           console.debug("Moving from: " + path + " to " + dest)
@@ -493,9 +498,9 @@
         }
 
         currBankQobj.find('LivePresets').append(newEntry);
-        console.debug(currBankQobj.value())
+        // console.debug(currBankQobj.value())
 
-        // await this.updateJson(presetJsonPathSelBank, currBankQobj)
+        await this.updateJson(presetJsonPathSelBank, currBankQobj)
         this.init()
       }
     }

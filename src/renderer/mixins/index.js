@@ -83,19 +83,22 @@ const myMixins = {
         async getJson(path, identifier) { // Objects are Passed by Reference // Arguments are Passed by Value
             // Clearing the array
             let result = [];
+            let entries
 
-            let jsonQobj = await this.getJsonQObject(path, 'utf-8')
+            await this.getJsonQObject(path, 'utf-8')
                 .catch(err => {
-                    return result;
                     return this.errorExit(err)
+                })
+                .then((res) => { // res is jsonQ Object
+                    // getting all elements that have identifier as a property
+                    entries = res.find(identifier, function () {
+                        // return this >= 5;
+                        return this
+                    }).parent().value();
                 })
             // console.debug(jsonQobj.find(identifier).value())
 
-            // getting all elements that have identifier as a property
-            let entries = jsonQobj.find(identifier, function () {
-                // return this >= 5;
-                return this
-            }).parent().value();
+
 
             for (let b in entries) {
                 result.push(entries[b]);
@@ -118,6 +121,7 @@ const myMixins = {
                 })
 
             return jsonQ(jsonObj);
+
         },
         checkIfDirectoriesExists(...paths) {
             console.debug(paths)
