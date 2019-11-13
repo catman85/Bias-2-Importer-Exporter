@@ -54,11 +54,15 @@
     <div v-if="this.presetsC.length">
       <div v-for="p in this.presetsC" :key="p.preset_folder">
         <!-- TODO: move to bank -->
-        <!-- <b-dropdown>
-          <b-dropdown-item v-for="b in this.banksC" :key="b.bank_name">
+        <b-dropdown dropright>
+          <template v-slot:button-content>
+            <strong>Move</strong> to <em>bank</em>
+          </template>
+          <!-- ATTENTION if you use this it won't work -->
+          <b-dropdown-item show v-for="b in banksC" :key="b.bank_folder">
             {{b.bank_name}}
           </b-dropdown-item>
-        </b-dropdown> -->
+        </b-dropdown>
         <div @click="exportPreset(p.preset_uuid)">
 
           {{p.display_order}}
@@ -100,8 +104,6 @@
   const util = require('util');
 
   const prompt = require('electron-prompt');
-
-  // import { DropdownPlugin } from 'bootstrap-vue'
 
   export default {
     data() {
@@ -303,18 +305,18 @@
           nameAttribute = 'bank_name'
           path = this.directory + this.bankJsonRelPath
         }
-        
+
         if (type === this.objType.PRESET) {
           let metaPath = this.nativePath(this.selectedBankPath + '/' + obj.preset_uuid + '/meta.json')
-          if(!this.checkIfDirectoriesExists(metaPath)){
+          if (!this.checkIfDirectoriesExists(metaPath)) {
             alert("meta.json file for: " + obj.preset_name + " not found in: " + metaPath)
             return;
           }
-          let metaQobj = await this.getJsonQObject(metaPath,'utf-8');
-          metaQobj.find('name').value(()=>{
+          let metaQobj = await this.getJsonQObject(metaPath, 'utf-8');
+          metaQobj.find('name').value(() => {
             return newName;
           })
-          await this.updateJson(metaPath,metaQobj);
+          await this.updateJson(metaPath, metaQobj);
         }
 
 
