@@ -54,6 +54,11 @@
     <div v-if="this.presetsC.length">
       <div v-for="p in this.presetsC" :key="p.preset_folder">
         <!-- TODO: move to bank -->
+        <!-- <b-dropdown>
+          <b-dropdown-item v-for="b in this.banksC" :key="b.bank_name">
+            {{b.bank_name}}
+          </b-dropdown-item>
+        </b-dropdown> -->
         <div @click="exportPreset(p.preset_uuid)">
 
           {{p.display_order}}
@@ -95,6 +100,8 @@
   const util = require('util');
 
   const prompt = require('electron-prompt');
+
+  // import { DropdownPlugin } from 'bootstrap-vue'
 
   export default {
     data() {

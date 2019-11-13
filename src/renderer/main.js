@@ -5,6 +5,16 @@ import router from './router'
 import store from './store'
 import myMixins from './mixins'
 import * as filters from './filters'
+import BootstrapVue from 'bootstrap-vue'
+
+// npm install bootstrap-vue bootstrap
+Vue.use(BootstrapVue)
+import './assets/scss/main.scss'
+
+import { DropdownPlugin } from 'bootstrap-vue'
+Vue.use(DropdownPlugin)
+
+
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.config.productionTip = false
