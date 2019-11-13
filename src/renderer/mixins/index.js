@@ -1,8 +1,18 @@
+// import {
+//     remove
+// } from 'fs-extra-p';
+// import {
+//     rejects
+// } from 'assert';
+
+// https://github.com/jprichardson/node-fs-extra
 const fs = require('fs-extra')
 const util = require('util');
 const jsonQ = require("jsonq");
 const prompt = require('electron-prompt');
 const readfile = util.promisify(fs.readFile);
+const writefile = util.promisify(fs.writeFile);
+const readdir = util.promisify(fs.readdir);
 
 const myMixins = {
     data() {
@@ -47,8 +57,7 @@ const myMixins = {
             return path.split('\\').pop().split('/').pop();
         },
         async listFolder(dirPath, callback) {
-            const readdir = util.promisify(fs.readdir);
-
+            // classic way
             // fs.readdir(this.directory, (err, dir) => {
             // for (let filePath of dir) {
             // console.log(filePath);
@@ -58,19 +67,15 @@ const myMixins = {
             try {
                 contents = await readdir(dirPath) // ls
             } catch (err) {
-                console.log(err);
+                return this.errorExit(err)
             }
+
             if (contents === undefined) {
                 console.log('undefined');
             } else {
                 console.log(contents);
             }
-            // console.debug(this.contents);
-            // this.$store.dispatch('setContents', contents);
-            // console.debug(cons);
-            // return cons;
-            // return contents;
-            // console.debug("Hello");
+
             if (callback != undefined) {
                 callback(); //searchContents
             }
@@ -80,6 +85,10 @@ const myMixins = {
             let result = [];
 
             let jsonQobj = await this.getJsonQObject(path, 'utf-8')
+                .catch(err => {
+                    return result;
+                    return this.errorExit(err)
+                })
             // console.debug(jsonQobj.find(identifier).value())
 
             // getting all elements that have identifier as a property
@@ -97,23 +106,20 @@ const myMixins = {
         },
         async updateJson(path, jsonQobj) {
             let content = JSON.stringify(jsonQobj.value()[0])
-            const writefile = util.promisify(fs.writeFile);
             await writefile(path, content)
                 .catch((err) => {
-                    console.log('Error', err);
-                    alert(err)
+                    return this.errorExit(err)
                 });
         },
         async getJsonQObject(path, encoding) {
             let jsonObj = await readfile(path, encoding)
                 .catch((err) => {
-                    console.debug('Error', err)
-                    alert(err)
+                    return this.errorExit(err)
                 })
 
             return jsonQ(jsonObj);
         },
-        checkIfDirectoriesExists: function (...paths) {
+        checkIfDirectoriesExists(...paths) {
             console.debug(paths)
             let bool = true
             for (let i in paths) {
@@ -130,12 +136,32 @@ const myMixins = {
         },
         async copyFromTo(source, dest) {
             // copies directory, even if it has subdirectories or files
-            fs.copy(source, dest, {
+            await fs.copy(source, dest, {
                 overwrite: true
-            }, err => {
-                if (err) return console.error(err)
-                console.log('success!')
+            }).catch(err => {
+                console.error("1")
+                return this.errorExit(err)
             })
+        },
+        async moveFromTo(src, dest) { // unused
+            try {
+                await fs.move(src, dest, {
+                    overwrite: true
+                })
+                console.log('success!')
+            } catch (err) {
+                return this.errorExit(err)
+            }
+        },
+        async remove(path) {
+            fs.remove(path)
+                .then((res) => {
+                    console.log('success removing: ' + path)
+                    return this.successResolve(res)
+                })
+                .catch(err => {
+                    return this.errorExit(err)
+                })
         },
         async asyncForEach(array, callback) {
             // ATTENTION classic forEach is not async compatible
@@ -144,6 +170,16 @@ const myMixins = {
                 // we dont use index or array
                 // we only use arra[index]    (file)
             }
+        },
+        errorExit(err) { // ATTENTION the function that uses this must await
+            return new Promise((resolve, reject) => {
+                reject(err)
+            })
+        },
+        successResolve(res) { // ATTENTION the function that uses this must await
+            return new Promise((resolve, reject) => {
+                resolve(res)
+            })
         }
     }
 }

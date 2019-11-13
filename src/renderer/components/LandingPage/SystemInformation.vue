@@ -46,7 +46,6 @@
       </div>
       <br>
     </div>
-    <button class="alt" @click='showSaveDialog("wut")'>Open Save Dialog</button>
     <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
     <button class="alt" @click='listFolder(directory)'>list</button>
@@ -54,17 +53,16 @@
     <div v-if="this.presetsC.length">
       <div v-for="p in this.presetsC" :key="p.preset_folder">
         <!-- TODO: move to bank -->
-        <b-dropdown dropright>
+        <b-dropdown dropright size="sm" variant="outline-primary">
           <template v-slot:button-content>
             <strong>Move</strong> to <em>bank</em>
           </template>
-          <!-- ATTENTION if you use this it won't work -->
-          <b-dropdown-item show v-for="b in banksC" :key="b.bank_folder">
+          <!-- ATTENTION if you use this.banksC it won't work -->
+          <b-dropdown-item show v-for="b in banksC" :key="b.bank_folder" @click='movePresetTo(b,p)'>
             {{b.bank_name}}
           </b-dropdown-item>
         </b-dropdown>
         <div @click="exportPreset(p.preset_uuid)">
-
           {{p.display_order}}
           {{p.preset_uuid}}
         </div>
@@ -85,7 +83,7 @@
 </template>
 
 <script>
-  const fs = require('fs-extra')
+  // const fs = require('fs-extra')
 
   import {
     mapState,
@@ -115,12 +113,19 @@
         objType: Object.freeze({
           "BANK": 0,
           "PRESET": 1
+        }),
+        importType: Object.freeze({
+          "MOVE": 0,
+          "COPY": 1
         })
       }
     },
     mounted() {
       // you could use async computed properties instead
       this.init();
+      // this.$root.$on('bv::dropdown::show', bvEvent => {
+      //   console.log('Dropdown is about to be shown', bvEvent)
+      // })
     },
     computed: {
       ...mapState({
@@ -169,29 +174,17 @@
           } else {
             // this.$store.dispatch('SET_DIR', {dir}); 
             // we can't call the mutation directly which can modify the state
-            this.$store.dispatch('setDir', folderPaths[
-              0]) // calling the async action which can't modify the state
+            if(this.checkIfDirectoriesExists(folderPaths[0] + this.bankJsonRelPath)){
+              this.$store.dispatch('setDir', folderPaths[0]) 
+            }else{
+              alert("This is not a Positive Grid folder")
+              this.$store.dispatch('setDir', "")
+            }
+            // calling the async action which can't modify the state
             console.log(folderPaths)
           }
           await this.sleep(200) // FIXME: not cool
           await this.init();
-        })
-      },
-      showSaveDialog(content) {
-        // You can obviously give a direct path without use the dialog (C:/Program Files/path/myfileexample.txt)
-        dialog.showSaveDialog((fileName) => {
-          if (fileName === undefined) {
-            console.log("You didn't save the file")
-            return
-          }
-
-          // fileName is a string that contains the path and filename created in the save file dialog.
-          fs.writeFile(fileName, content, (err) => {
-            if (err) {
-              alert('An error ocurred creating the file ' + err.message)
-            }
-            console.debug('The file has been succesfully saved')
-          })
         })
       },
       async selectBank(folderName) {
@@ -222,6 +215,50 @@
             this.copyFromTo(selectedPresetPath, destination)
           }
         })
+      },
+      async movePresetTo(bank, preset) {
+        let currBankFolder = this.$store.state.Directory.selectedBankFolder;
+        let src = this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid)
+        // console.debug("Moving " + preset.preset_name + " from " + currBankFolder + " to " + bank.bank_folder)
+
+        if (currBankFolder == bank.bank_folder) {
+          // return this.errorExit("same src and dest")
+        }
+        // append to currPresettJson (handled by importPreset)
+        await this.importPreset(src, bank, this.importType.COPY)
+          .then(() => {
+            console.log('Successfully Copied preset: ' + src + ' to ' + bank)
+            this.deletePreset(preset)
+          })
+          .catch((err) => {
+            console.error("3")
+            return this.errorExit(err)
+          })
+
+      },
+      async deletePreset(preset) {
+        // TODO: remove from this.presetJsonPath
+        let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
+        let presetPath = this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid);
+        let presets = jsonQobj.find('LivePresets').value()[0]
+        console.debug(presets)
+
+        // removing entry from preset.json
+        let oneMissingPreset = presets.filter((value, index, array) => {
+          if (value.preset_uuid != preset.preset_uuid) {
+            return value;
+          }
+        })
+        jsonQobj.find('LivePresets').value((val) => {
+          return oneMissingPreset;
+        })
+        console.debug(jsonQobj.find('LivePresets').value()[0])
+
+        await this.updateJson(this.presetJsonPath, jsonQobj)
+          .catch(err => {
+            return this.errorExit(err)
+          });
+        await this.remove(presetPath)
       },
       async favoriteChange(preset) {
         let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
@@ -255,8 +292,8 @@
         }
 
         console.debug(bankQobj.value()[0])
-        await this.updateJson(this.directory + this.bankJsonRelPath, bankQobj)
         await this.updateJson(this.presetJsonPath, jsonQobj)
+        await this.updateJson(this.directory + this.bankJsonRelPath, bankQobj)
         this.init();
       },
       async showNewNamePrompt(obj) {
@@ -331,7 +368,7 @@
           return newName;
         });
 
-        this.updateJson(path, jsonQobj)
+        await this.updateJson(path, jsonQobj)
         this.init();
       },
       async changeOrder(dir, preset) { // useless
@@ -388,7 +425,7 @@
         jsonQobj.sort('display_order')
 
         // console.debug(jsonQobj.value()[0]);
-        this.updateJson(this.presetJsonPath, jsonQobj)
+        await this.updateJson(this.presetJsonPath, jsonQobj)
         this.init();
       },
       async selectPresetsDialog(bank) {
@@ -402,23 +439,24 @@
             return;
           } else {
             var funct = this.importPreset
+            var type = this.importType.COPY
             // func reference accessible in nameless func
             // problems with closures if we use importPreset directly it wont work
             this.asyncForEach(folderPaths,
               async function (path) {
                 // console.debug(path)
-                await funct(path, bank)
+                await funct(path, bank, type)
               });
           }
         })
       },
-      async importPreset(path, bank) {
+      async importPreset(path, bank, importType) {
         let pathMeta = this.nativePath(path + '/meta.json')
         let pathData = this.nativePath(path + '/data.json')
 
         if (!this.checkIfDirectoriesExists(pathData, pathMeta)) {
           alert("Invalid Preset Folder: " + path)
-          return false;
+          return this.errorExit("bad preset folder")
         }
         let newUUID = this.getLastPartOfPath(path)
         let selBankPath = this.nativePath(this.directory + '/BIAS_FX2/GlobalPresets/' + bank.bank_folder)
@@ -427,8 +465,19 @@
 
         console.debug("Importing Preset... " + newUUID)
         console.debug("To json file ... " + presetJsonPathSelBank)
-        console.debug("Copying from: " + path + " to " + dest)
-        await this.copyFromTo(path, dest)
+        if (importType == this.importType.COPY) {
+          console.debug("Copying from: " + path + " to " + dest)
+          await this.copyFromTo(path, dest).catch(err => {
+            console.error("2")
+            return this.errorExit(err)
+          })
+        } else { // unused
+          console.debug("Moving from: " + path + " to " + dest)
+          await this.moveFromTo(path, dest).catch(err => {
+            return this.errorExit(err)
+          })
+        }
+
 
         let newPreQobj = await this.getJsonQObject(pathMeta, 'utf-8')
         let newPresetName = newPreQobj.find('name').value()[0]
@@ -446,9 +495,8 @@
         currBankQobj.find('LivePresets').append(newEntry);
         console.debug(currBankQobj.value())
 
-        await this.updateJson(this.presetJsonPath, currBankQobj)
+        // await this.updateJson(presetJsonPathSelBank, currBankQobj)
         this.init()
-        return true;
       }
     }
   }
