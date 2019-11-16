@@ -2,7 +2,7 @@
   <div>
     Is dir set? {{isDirSet}}<br>
     is dir legit? {{checkMainDirectoryValidity}}<br>
-    Dir: {{positiveGridParh}}<br>
+    Dir: {{positiveGridPath}}<br>
     <div v-if="checkMainDirectoryValidity">
       Selected Bank Path: {{selectedBankPath}}<br>
       Preset Json Path: {{presetJsonPath}}<br>
@@ -22,31 +22,12 @@
     </div>
     <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <button class="alt" @click='showStateStuff()'>shot state</button>
-    <button class="alt" @click='listFolder(positiveGridParh)'>list</button>
+    <button class="alt" @click='listFolder(positiveGridPath)'>list</button>
 
     <div v-if="this.presets.length">
       <div show v-for="p in this.presets" :key="p.preset_folder">
         <!-- TODO: move to bank -->
-        <b-dropdown dropright size="sm" variant="outline-primary">
-          <template v-slot:button-content>
-            <strong>Move</strong> to <em>bank</em>
-          </template>
-          <!-- ATTENTION if you use this.banksC it won't work -->
-          <b-dropdown-item show v-for="b in banks" :key="b.bank_folder" @click='movePresetTo(b,p)'>
-            {{b.bank_name}}
-          </b-dropdown-item>
-        </b-dropdown>
-        <div @click="exportPreset(p.preset_uuid)">
-          {{p.display_order}}
-          {{p.preset_uuid}}
-        </div>
-        <div @click="showNewNamePrompt(p)">{{p.preset_name}}</div>
-        <div @click="favoriteChange(p)">
-          {{p.is_favorite}}
-        </div>
-        <div @click="deletePreset(p,deleteType.NOTSURE)">DELETE</div>
-        <div @click="changeOrder(direction.UP,p)">UP</div>
-        <div @click="changeOrder(direction.DOWN,p)">DOWN</div>
+        <preset-card :preset="p" :banks='banks'></preset-card>
         <br>
       </div>
     </div>
@@ -58,15 +39,17 @@
 </template>
 
 <script>
-  // const fs = require('fs-extra')
+  import {
+    EventBus
+  } from '../plugins/event-bus.js';
 
-  import {
-    mapState,
-    mapActions
-  } from 'vuex'
-  import {
-    rename
-  } from 'fs';
+  // import {
+  //   mapState,
+  //   mapActions
+  // } from 'vuex'
+  // import {
+  //   rename
+  // } from 'fs';
 
   import swal from 'sweetalert';
   // require('fs')
@@ -75,7 +58,8 @@
     dialog
   } = require('electron').remote
 
-  import SystemInformation from '@/components/LandingPage/SystemInformation.vue'
+  import SystemInformation from '@/components/SystemInformation.vue'
+  import PresetCard from '@/components/PresetCard.vue'
 
   const util = require('util');
 
@@ -84,10 +68,6 @@
   export default {
     data() {
       return {
-        direction: Object.freeze({
-          "UP": 0,
-          "DOWN": 1
-        }),
         objType: Object.freeze({
           "BANK": 0,
           "PRESET": 1
@@ -96,14 +76,11 @@
           "MOVE": 0,
           "COPY": 1
         }),
-        deleteType: Object.freeze({
-          "JUSTDOIT": 0,
-          "NOTSURE": 1
-        })
       }
     },
     components: {
-      SystemInformation
+      SystemInformation,
+      PresetCard
     },
     mounted() {
       // you could use async computed properties instead
@@ -111,34 +88,13 @@
       // this.$root.$on('bv::dropdown::show', bvEvent => {
       //   console.log('Dropdown is about to be shown', bvEvent)
       // })
-    },
-    computed: {
-      ...mapState({
-        count: state => state.Counter.main, // just for educational purposes
-        isDirSet: state => state.Directory.isDirSet,
-        selectedBankFolder: (state) => {
-          // this.init()
-          return state.Directory.selectedBankFolder
-        }
-      }),
-      positiveGridParh: function () {
-        if (this.$store.state.Directory.isDirSet) {
-          return this.$store.state.Directory.dir;
-        } else {
-          return this.nativePath(this.docPath + "/PositiveGrid");
-        }
-      },
-      checkMainDirectoryValidity: function () {
-        return this.checkIfDirectoriesExists(this.positiveGridParh + this.bankJsonRelPath)
-      },
-      presetJsonPath: function () {
-        return this.nativePath(this.positiveGridParh + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder +
-          '/preset.json');
-      },
-      selectedBankPath: function () {
-        this.init() // ATTENTION everytime the main dir or selected bank is changed we trigger an UI change
-        return this.nativePath(this.positiveGridParh + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
-      }
+      EventBus.$on('init', () => {
+        this.init()
+      });
+
+      EventBus.$on('changeNamePreset', (preset) => {
+        this.showNewNamePrompt(preset);
+      });
     },
     methods: {
       async init() {
@@ -146,7 +102,7 @@
         // these cause a flash
         // this.banks = []
         // this.presets = []
-        this.banks = await this.getJson(this.positiveGridParh + this.bankJsonRelPath, 'bank_name')
+        this.banks = await this.getJson(this.positiveGridPath + this.bankJsonRelPath, 'bank_name')
         this.presets = await this.getJson(this.presetJsonPath, 'preset_name')
       },
       async selectPositiveGridFolder() {
@@ -177,142 +133,6 @@
         console.debug(folderName);
         // triggers init()
         this.$store.dispatch('setBank', folderName)
-      },
-      async exportPreset(uuid) {
-        console.debug(uuid);
-        dialog.showOpenDialog({
-          title: 'Select a folder to export the preset to',
-          properties: ['openDirectory']
-        }, (folderPaths) => {
-          // folderPaths is an array that contains all the selected paths
-          if (folderPaths === undefined) {
-            console.log('No destination folder selected')
-            return;
-          } else {
-            let selectedPresetPath = this.nativePath(this.selectedBankPath + '/' + uuid);
-            let destination = this.nativePath(folderPaths[0] + '/' + uuid);
-            console.debug(selectedPresetPath);
-            console.log(destination)
-
-            this.copyFromTo(selectedPresetPath, destination)
-          }
-        })
-      },
-      async movePresetTo(bank, preset) {
-        let currBankFolder = this.$store.state.Directory.selectedBankFolder;
-        let src = this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid)
-        // console.debug("Moving " + preset.preset_name + " from " + currBankFolder + " to " + bank.bank_folder)
-
-        if (!this.checkIfDirectoriesExists(src)) {
-          swal({
-            title: "Error",
-            text: "The directory " + src + " doesn't exist!",
-            icon: "error"
-          })
-          return this.errorExit("dir doesn't exist");
-        }
-
-        if (currBankFolder == bank.bank_folder) {
-          swal({
-            title: "Error",
-            text: "You have to select a different folder to move the preset to!",
-            icon: "error"
-          })
-          return this.errorExit("same src and dest")
-        }
-        // append to currPresettJson (handled by importPreset)
-        await this.importPreset(src, bank, this.importType.COPY)
-          .then(() => {
-            console.log('Successfully Copied preset: ' + src + ' to ' + bank)
-            this.deletePreset(preset, this.deleteType.JUSTDOIT)
-          })
-          .catch((err) => {
-            // console.error("3")
-            return this.errorExit(err)
-          })
-          .then(()=>{
-            swal("Moved!", "You just moved: " + preset.preset_name + "!", "success");
-          })
-      },
-      async deletePreset(preset, type) {
-        if (type === this.deleteType.NOTSURE) {
-          const willDelete = await swal({
-            title: "Are you sure?",
-            text: "Are you sure that you want to delete" + preset.preset_name + "?",
-            icon: "warning",
-            dangerMode: true,
-          });
-
-          if (!willDelete) {
-            return
-          }
-        }
-        let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
-        let presetPath = this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid);
-        let presets = jsonQobj.find('LivePresets').value()[0]
-        console.debug(presets)
-
-        // removing entry from preset.json
-        let oneMissingPreset = presets.filter((value, index, array) => {
-          if (value.preset_uuid != preset.preset_uuid) {
-            return value;
-          }
-        })
-        jsonQobj.find('LivePresets').value((val) => {
-          return oneMissingPreset;
-        })
-        console.debug("One Missing Preset: " + preset.preset_name)
-        console.debug(jsonQobj.find('LivePresets').value()[0])
-
-        await this.updateJson(this.presetJsonPath, jsonQobj)
-          .then(res => {
-            this.remove(presetPath)
-          })
-          .then(res => {
-            this.init();
-          })
-          .catch(err => {
-            return this.errorExit(err)
-          });
-        if (type === this.deleteType.NOTSURE) {
-          swal("Deleted!", "You just deleted: " + preset.preset_name + "!", "success");
-        }
-      },
-      async favoriteChange(preset) {
-        let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
-        let bankQobj = await this.getJsonQObject(this.positiveGridParh + this.bankJsonRelPath, 'utf-8');
-        let favorites = bankQobj.find('Favorites').value()[0]
-
-        // searching for an entry with our preset id
-        let curr = jsonQobj.find('preset_uuid', function () {
-          return this === preset.preset_uuid
-        }).parent();
-
-        curr.find('is_favorite').value(function (bool) {
-          return !bool;
-        });
-
-        // we also need to modify the bank.json file
-        if (curr.find('is_favorite').value()[0]) {
-          // if it just became a fav
-          bankQobj.find('Favorites').append(preset.preset_uuid)
-        } else {
-          // if it was just removed from fav
-          let newFav = favorites.filter((value, index, array) => {
-            if (value != preset.preset_uuid) {
-              return value
-            }
-          })
-          // removing the entry from bank.json
-          bankQobj.find('Favorites').value((val) => {
-            return newFav;
-          })
-        }
-
-        console.debug(bankQobj.value()[0])
-        await this.updateJson(this.presetJsonPath, jsonQobj)
-        await this.updateJson(this.positiveGridParh + this.bankJsonRelPath, bankQobj)
-        this.init();
       },
       async showNewNamePrompt(obj) {
         // figuring out the type of the object
@@ -358,7 +178,7 @@
           id = obj.bank_folder
           idAttribute = 'bank_folder'
           nameAttribute = 'bank_name'
-          path = this.positiveGridParh + this.bankJsonRelPath
+          path = this.positiveGridPath + this.bankJsonRelPath
         }
 
         if (type === this.objType.PRESET) {
@@ -387,63 +207,6 @@
         });
 
         await this.updateJson(path, jsonQobj)
-        this.init();
-      },
-      async changeOrder(dir, preset) { // useless
-        if (preset.display_order == 0 && dir == this.direction.UP) {
-          console.debug("Can't go up")
-          return
-        } else if ((preset.display_order == this.presets.length - 1) && dir == this.direction.DOWN) {
-          console.debug("Can't go down")
-          return
-        }
-
-        let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
-
-        // finding siblings
-        let prev = jsonQobj.find('display_order', function () {
-          return this === preset.display_order - 1;
-        });
-        // console.debug(prev.parent().value())
-
-        let curr = jsonQobj.find('display_order', function () {
-          return this === preset.display_order;
-        });
-        // console.debug(curr.parent().value())
-
-        let next = jsonQobj.find('display_order', function () {
-          return this === preset.display_order + 1;
-        });
-        // console.debug(next.parent().value())
-
-        // let c = curr.find('display_order').value()[0]
-        // let p = prev.find('display_order').value()[0]
-
-        // modifying siblings
-        if (dir == this.direction.UP) {
-          curr.value(function (order) {
-            return order - 1;
-          })
-
-          prev.value(function (order) {
-            return order + 1;
-          })
-        }
-        if (dir == this.direction.DOWN) {
-          curr.value(function (order) {
-            return order + 1;
-          })
-
-          next.value(function (order) {
-            return order - 1;
-          })
-        }
-
-        // sorting based on display order
-        jsonQobj.sort('display_order')
-
-        // console.debug(jsonQobj.value()[0]);
-        await this.updateJson(this.presetJsonPath, jsonQobj)
         this.init();
       },
       async selectPresetsDialog(bank) {
@@ -477,7 +240,7 @@
           return this.errorExit("bad preset folder")
         }
         let newUUID = this.getLastPartOfPath(path)
-        let selBankPath = this.nativePath(this.positiveGridParh + '/BIAS_FX2/GlobalPresets/' + bank.bank_folder)
+        let selBankPath = this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + bank.bank_folder)
         let presetJsonPathSelBank = this.nativePath(selBankPath + '/preset.json');
         let dest = this.nativePath(selBankPath + '/' + newUUID)
 
@@ -519,32 +282,3 @@
     }
   }
 </script>
-
-<style scoped>
-  .title {
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: initial;
-    letter-spacing: .25px;
-    margin-top: 10px;
-  }
-
-  .items {
-    margin-top: 8px;
-  }
-
-  .item {
-    display: flex;
-    margin-bottom: 6px;
-  }
-
-  .item .name {
-    color: #6a6a6a;
-    margin-right: 6px;
-  }
-
-  .item .value {
-    color: #35495e;
-    font-weight: bold;
-  }
-</style>

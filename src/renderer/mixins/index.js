@@ -14,6 +14,9 @@ const readfile = util.promisify(fs.readFile);
 const writefile = util.promisify(fs.writeFile);
 const readdir = util.promisify(fs.readdir);
 
+import {mapState} from 'vuex'
+
+
 const myMixins = {
     data() {
         return {
@@ -29,6 +32,37 @@ const myMixins = {
             presets: [],
         }
     },
+    computed: { // having global computed properties renders vuex store useless but whatever
+        ...mapState({
+          count: state => state.Counter.main, // just for educational purposes
+          isDirSet: state => state.Directory.isDirSet,
+          selectedBankFolder: (state) => {
+            // this.init()
+            return state.Directory.selectedBankFolder
+          }
+        }),
+        positiveGridPath: function () {
+          if (this.$store.state.Directory.isDirSet) {
+            return this.$store.state.Directory.dir;
+          } else {
+            return this.nativePath(this.docPath + "/PositiveGrid");
+          }
+        },
+        checkMainDirectoryValidity: function () {
+          return this.checkIfDirectoriesExists(this.positiveGridPath + this.bankJsonRelPath)
+        },
+        presetJsonPath: function () {
+          return this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder +
+            '/preset.json');
+        },
+        selectedBankPath: function () {
+        //   this.init() // ATTENTION everytime the main dir or selected bank is changed we trigger an UI change
+          return this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
+        },
+        banksC: function() {
+            return this.banks
+        }
+      },
     methods: {
         showStateStuff() {
             console.debug(this.$store.state.Directory.isDirSet)
