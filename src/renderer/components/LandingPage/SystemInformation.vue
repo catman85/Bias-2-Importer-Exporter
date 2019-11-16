@@ -51,7 +51,7 @@
     <button class="alt" @click='listFolder(positiveGridParh)'>list</button>
 
     <div v-if="this.presets.length">
-      <div v-for="p in this.presets" :key="p.preset_folder">
+      <div show v-for="p in this.presets" :key="p.preset_folder">
         <!-- TODO: move to bank -->
         <b-dropdown dropright size="sm" variant="outline-primary">
           <template v-slot:button-content>
@@ -70,7 +70,7 @@
         <div @click="favoriteChange(p)">
           {{p.is_favorite}}
         </div>
-        <div @click="deletePreset(p)">DELETE</div>
+        <div @click="deletePreset(p,deleteType.NOTSURE)">DELETE</div>
         <div @click="changeOrder(direction.UP,p)">UP</div>
         <div @click="changeOrder(direction.DOWN,p)">DOWN</div>
         <br>
@@ -94,6 +94,7 @@
     rename
   } from 'fs';
 
+  import swal from 'sweetalert';
   // require('fs')
   // const fs = require('fs-extra')
   const {
@@ -118,6 +119,10 @@
         importType: Object.freeze({
           "MOVE": 0,
           "COPY": 1
+        }),
+        deleteType: Object.freeze({
+          "JUSTDOIT": 0,
+          "NOTSURE": 1
         })
       }
     },
@@ -219,23 +224,50 @@
         let src = this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid)
         // console.debug("Moving " + preset.preset_name + " from " + currBankFolder + " to " + bank.bank_folder)
 
+        if (!this.checkIfDirectoriesExists(src)) {
+          swal({
+            title: "Error",
+            text: "The directory " + src + " doesn't exist!",
+            icon: "error"
+          })
+          return this.errorExit("dir doesn't exist");
+        }
+
         if (currBankFolder == bank.bank_folder) {
-          // return this.errorExit("same src and dest")
+          swal({
+            title: "Error",
+            text: "You have to select a different folder to move the preset to!",
+            icon: "error"
+          })
+          return this.errorExit("same src and dest")
         }
         // append to currPresettJson (handled by importPreset)
         await this.importPreset(src, bank, this.importType.COPY)
           .then(() => {
             console.log('Successfully Copied preset: ' + src + ' to ' + bank)
-            this.deletePreset(preset)
+            this.deletePreset(preset, this.deleteType.JUSTDOIT)
           })
           .catch((err) => {
             // console.error("3")
             return this.errorExit(err)
           })
-
+          .then(()=>{
+            swal("Moved!", "You just moved: " + preset.preset_name + "!", "success");
+          })
       },
-      async deletePreset(preset) {
-        // TODO: remove from this.presetJsonPath
+      async deletePreset(preset, type) {
+        if (type === this.deleteType.NOTSURE) {
+          const willDelete = await swal({
+            title: "Are you sure?",
+            text: "Are you sure that you want to delete" + preset.preset_name + "?",
+            icon: "warning",
+            dangerMode: true,
+          });
+
+          if (!willDelete) {
+            return
+          }
+        }
         let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
         let presetPath = this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid);
         let presets = jsonQobj.find('LivePresets').value()[0]
@@ -263,7 +295,9 @@
           .catch(err => {
             return this.errorExit(err)
           });
-
+        if (type === this.deleteType.NOTSURE) {
+          swal("Deleted!", "You just deleted: " + preset.preset_name + "!", "success");
+        }
       },
       async favoriteChange(preset) {
         let jsonQobj = await this.getJsonQObject(this.presetJsonPath, 'utf-8');
