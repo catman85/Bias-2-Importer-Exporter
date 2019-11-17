@@ -34,7 +34,6 @@ const myMixins = {
     },
     computed: { // having global computed properties renders vuex store useless but whatever
         ...mapState({
-          count: state => state.Counter.main, // just for educational purposes
           isDirSet: state => state.Directory.isDirSet,
           selectedBankFolder: (state) => {
             // this.init()

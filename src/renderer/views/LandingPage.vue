@@ -43,17 +43,8 @@
     EventBus
   } from '../plugins/event-bus.js';
 
-  // import {
-  //   mapState,
-  //   mapActions
-  // } from 'vuex'
-  // import {
-  //   rename
-  // } from 'fs';
-
   import swal from 'sweetalert';
-  // require('fs')
-  // const fs = require('fs-extra')
+
   const {
     dialog
   } = require('electron').remote
@@ -194,7 +185,6 @@
           })
           await this.updateJson(metaPath, metaQobj);
         }
-
 
         let jsonQobj = await this.getJsonQObject(path, 'utf-8');
 

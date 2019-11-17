@@ -1,15 +1,9 @@
 <template>
     <div>
-        <!-- <h1 @click="callParent()">test</h1> -->
-        <!-- <div v-for="c in this.presets" :key="c.bank_folder">
-    test
-</div> -->
-
         <b-dropdown dropright size="sm" variant="outline-primary">
             <template v-slot:button-content>
                 <strong>Move</strong> to <em>bank</em>
             </template>
-            <!-- FIXME: why it wont work? -->
             <!-- ATTENTION if you use this.banksC it won't work -->
             <b-dropdown-item v-for="b in this.banksChild" :key="b.bank_folder" @click='movePresetTo(b,preset)'>
                 {{b.bank_name}}</b-dropdown-item>
@@ -31,6 +25,14 @@
 </template>
 
 <script>
+    // ATTENTION
+    // let importPresetFunc = this.$parent.$options.methods.importPreset
+    // importPresetFunc()
+    // when the method runs in parent it fucks up the this reference
+    // and nothing works
+    // ATTENTION but this works!
+    // let importPresetFunc = this.$parent.importPreset
+    // In Vue, the parent-child component relationship can be summarized as props down, events up. The parent passes data down to the child via props, and the child sends messages to the parent via events...
     import {
         EventBus
     } from '../plugins/event-bus.js';
@@ -49,8 +51,8 @@
         },
         data() {
             return {
-                // init: this.$parent.$options.methods.init, // not used
-                // nativePath: this.$parent.$options.methods.nativePath, // not used
+                init: this.$parent.init, // not used
+                importPresetFunc: this.$parent.importPreset,
                 importType: Object.freeze({
                     "MOVE": 0,
                     "COPY": 1
@@ -67,14 +69,7 @@
         },
         updated() {},
         mounted() {
-            // console.debug(this.nativePath(this.selectedBankPath + '/'))
-            // this.movePresetTo({},{})
 
-            // console.debug(this.banksChild);
-            // console.debug(this.banks);
-            // for (var b in this.banks) {
-            // console.debug(b)
-            // }
         },
         methods: {
             callParent() {
@@ -99,9 +94,11 @@
                 EventBus.$emit('changeNamePreset', preset);
             },
             async movePresetTo(bank, preset) {
+                // console.debug(this.nativePath(this.selectedBankPath + '/'))
                 let currBankFolder = this.$store.state.Directory.selectedBankFolder;
-                let src = await this.this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid);
-                // console.debug("Moving " + preset.preset_name + " from " + currBankFolder + " to " + bank.bank_folder)
+                let src = this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid);
+                console.debug("Moving " + preset.preset_name + " from " + currBankFolder + " to " + bank
+                    .bank_folder)
 
                 if (!this.checkIfDirectoriesExists(src)) {
                     swal({
@@ -121,11 +118,10 @@
                     return this.errorExit("same src and dest")
                 }
                 // append to currPresettJson (handled by importPreset)
-                let importPresetFunc = this.$parent.$options.methods.importPreset
-                await importPresetFunc(src, bank, this.importType.COPY)
+                await this.importPresetFunc(src, bank, this.importType.COPY)
                     .then(() => {
                         console.log('Successfully Copied preset: ' + src + ' to ' + bank)
-                        // this.deletePreset(preset, this.deleteType.JUSTDOIT)
+                        this.deletePreset(preset, this.deleteType.JUSTDOIT)
                     })
                     .catch((err) => {
                         // console.error("3")
