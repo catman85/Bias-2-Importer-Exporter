@@ -1,15 +1,14 @@
 <template>
   <div>
-    <div v-if="checkMainDirectoryValidity">
+    <div class="split left" v-if="checkMainDirectoryValidity">
       <div v-for="b in this.banks" :key="b.bank_folder">
         <bank-card :bank="b"></bank-card>
       </div>
       <br>
     </div>
 
-    <div v-if="this.presets.length">
+    <div class="split right" v-if="this.presets.length">
       <div show v-for="p in this.presets" :key="p.preset_folder">
-        <!-- TODO: move to bank -->
         <preset-card :preset="p" :banks='banks'></preset-card>
         <br>
       </div>
@@ -18,6 +17,8 @@
       <br>
       <p>No presets in this folder</p>
     </div>
+    <!-- ATTENTION we use this to trigger the computed property -->
+    <div style="visibility: hidden;">{{this.selectedBankPath}}</div>
   </div>
 </template>
 

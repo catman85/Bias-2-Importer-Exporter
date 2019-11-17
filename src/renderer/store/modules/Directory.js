@@ -27,6 +27,7 @@ const mutations = {
   SET_BANK(state, {
     bankFolder
   }) {
+    // console.log("test")
     // return new Promise((res, rej) => {
       state.selectedBankFolder = bankFolder
       // res(bankFolder)

@@ -1,8 +1,36 @@
 #app{
-    background-color: grey;
-    color: black;
+    // background-color: grey;
+    // color: black;
 }
 
 h1{
     color: red;
 }
+
+header{
+    // padding: 5rem;
+    height: 20%;
+}
+
+.quick-menu{
+    z-index: 5;
+}
+.split {
+    height: 80%;
+    position: fixed;
+    // z-index: 1;
+    bottom: 0;
+    overflow-x: hidden;
+    // padding-top: 4rem;
+    &.left {
+        width:40%;
+        left: 0;
+      }
+    &.right {
+        width: 60%;
+        right: 0;
+      }
+  }
+
+ 
+  

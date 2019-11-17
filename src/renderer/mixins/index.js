@@ -52,7 +52,6 @@ const myMixins = {
         ...mapState({
             isDirSet: state => state.Directory.isDirSet,
             selectedBankFolder: (state) => {
-                // this.init()
                 return state.Directory.selectedBankFolder
             },
             banksChild: state => state.Directory.banks
@@ -73,7 +72,9 @@ const myMixins = {
         },
         selectedBankPath: function () {
             // ATTENTION everytime the main dir or selected bank is changed we trigger an UI change
+            // ATTENTION we need to put this property in template to trigger a change
             EventBus.$emit('init');
+            
             return this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
         },
         banksC: function () {

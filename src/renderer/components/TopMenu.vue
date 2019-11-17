@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <header>
     <h1>Test</h1>
     <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
     <!-- <button class="alt" @click='showStateStuff()'>shot state</button> -->
     <!-- <button class="alt" @click='listFolder(positiveGridPath)'>list</button> -->
     <quick-menu :menu-count=count :icon-class=icons :menu-url-list=list></quick-menu>
-  </div>
+  </header>
 
 </template>
 

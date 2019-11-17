@@ -28,6 +28,8 @@
                 console.debug(folderName);
                 // triggers init()
                 this.$store.dispatch('setBank', folderName)
+                // await this.sleep(50) // FIXME:
+                // this.$parent.init();
             },
             async selectPresetsDialog(bank) {
                 dialog.showOpenDialog({
