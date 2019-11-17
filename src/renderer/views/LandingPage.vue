@@ -1,22 +1,11 @@
 <template>
   <div>
-    Is dir set? {{isDirSet}}<br>
-    is dir legit? {{checkMainDirectoryValidity}}<br>
-    Dir: {{positiveGridPath}}<br>
-    <div v-if="checkMainDirectoryValidity">
-      Selected Bank Path: {{selectedBankPath}}<br>
-      Preset Json Path: {{presetJsonPath}}<br>
-    </div>
-    <system-information></system-information>
     <div v-if="checkMainDirectoryValidity">
       <div v-for="b in this.banks" :key="b.bank_folder">
         <bank-card :bank="b"></bank-card>
       </div>
       <br>
     </div>
-    <button class="alt" @click='selectPositiveGridFolder()'>Select Folder</button>
-    <button class="alt" @click='showStateStuff()'>shot state</button>
-    <button class="alt" @click='listFolder(positiveGridPath)'>list</button>
 
     <div v-if="this.presets.length">
       <div show v-for="p in this.presets" :key="p.preset_folder">
@@ -43,7 +32,7 @@
     dialog
   } = require('electron').remote
 
-  import SystemInformation from '@/components/SystemInformation.vue'
+
   import BankCard from '@/components/BankCard.vue'
   import PresetCard from '@/components/PresetCard.vue'
 
@@ -53,7 +42,6 @@
 
   export default {
     components: {
-      SystemInformation,
       BankCard,
       PresetCard
     },
@@ -80,29 +68,6 @@
         this.banks = await this.getJson(this.positiveGridPath + this.bankJsonRelPath, 'bank_name')
         this.$store.dispatch('setBanks', this.banks)
         this.presets = await this.getJson(this.presetJsonPath, 'preset_name')
-      },
-      async selectPositiveGridFolder() {
-        dialog.showOpenDialog({
-          title: 'Select a folder',
-          properties: ['openDirectory']
-        }, async (folderPaths) => {
-          // folderPaths is an array that contains all the selected paths
-          if (folderPaths === undefined) {
-            console.log('No destination folder selected')
-            // triggers init()
-            this.$store.dispatch('setDir', "")
-          } else {
-            // we can't call the mutation directly which can modify the state
-            if (this.checkIfDirectoriesExists(folderPaths[0] + this.bankJsonRelPath)) {
-              await this.$store.dispatch('setDir', folderPaths[0])
-            } else {
-              alert("This is not a Positive Grid folder")
-              await this.$store.dispatch('setDir', "")
-            }
-            // await this.$store.dispatch('setDir', folderPaths[0])
-            console.log(folderPaths)
-          }
-        })
       },
       async showNewNamePrompt(obj) {
         // figuring out the type of the object

@@ -13,6 +13,11 @@ export default new Router({
     {
       path: '*',
       redirect: '/'
+    },
+    {
+      path: '/sys-info',
+      name: 'system-information',
+      component: require('@/views/Info').default
     }
   ]
 })
