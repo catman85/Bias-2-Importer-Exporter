@@ -39,7 +39,8 @@ const myMixins = {
           selectedBankFolder: (state) => {
             // this.init()
             return state.Directory.selectedBankFolder
-          }
+          },
+          banksChild: state => state.Directory.banks
         }),
         positiveGridPath: function () {
           if (this.$store.state.Directory.isDirSet) {

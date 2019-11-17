@@ -2,7 +2,7 @@
 const state = {
   isDirSet: false,
   dir: String,
-  contents: Array,
+  banks: Array,
   selectedBankFolder: String
 }
 
@@ -19,10 +19,10 @@ const mutations = {
       state.isDirSet = true
     }
   },
-  SET_CONTENTS(state, {
-    contents
+  SET_BANKS(state, {
+    banks
   }) { // not used
-    state.contents = contents
+    state.banks = banks
   },
   SET_BANK(state, {
     bankFolder
@@ -45,11 +45,11 @@ const actions = {
       'dir': payload
     })
   },
-  setContents({
+  setBanks({
     commit
   }, payload) {
-    commit('SET_CONTENTS', {
-      'contents': payload
+    commit('SET_BANKS', {
+      'banks': payload
     })
   },
   setBank({

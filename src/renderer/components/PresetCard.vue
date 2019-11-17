@@ -9,12 +9,10 @@
             <template v-slot:button-content>
                 <strong>Move</strong> to <em>bank</em>
             </template>
-            {{this.banks}}
             <!-- FIXME: why it wont work? -->
             <!-- ATTENTION if you use this.banksC it won't work -->
-            <b-dropdown-item v-for="b in banksC" :key="b.bank_folder" @click='movePresetTo(b,preset)'>
-                {{b.bank_name}}
-            </b-dropdown-item>
+            <b-dropdown-item v-for="b in this.banksChild" :key="b.bank_folder" @click='movePresetTo(b,preset)'>
+                {{b.bank_name}}</b-dropdown-item>
         </b-dropdown>
 
         <!-- works from here and down -->
@@ -47,14 +45,12 @@
         props: {
             preset: {
                 type: Object
-            },
-            bankos: {
-                type: Array
             }
         },
         data() {
             return {
-                init: this.$parent.$options.methods.init, // not used
+                // init: this.$parent.$options.methods.init, // not used
+                // nativePath: this.$parent.$options.methods.nativePath, // not used
                 importType: Object.freeze({
                     "MOVE": 0,
                     "COPY": 1
@@ -71,9 +67,13 @@
         },
         updated() {},
         mounted() {
+            // console.debug(this.nativePath(this.selectedBankPath + '/'))
+            // this.movePresetTo({},{})
+
+            // console.debug(this.banksChild);
             // console.debug(this.banks);
             // for (var b in this.banks) {
-                // console.debug(b)
+            // console.debug(b)
             // }
         },
         methods: {
@@ -100,7 +100,7 @@
             },
             async movePresetTo(bank, preset) {
                 let currBankFolder = this.$store.state.Directory.selectedBankFolder;
-                let src = this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid);
+                let src = await this.this.nativePath(this.selectedBankPath + '/' + preset.preset_uuid);
                 // console.debug("Moving " + preset.preset_name + " from " + currBankFolder + " to " + bank.bank_folder)
 
                 if (!this.checkIfDirectoriesExists(src)) {
