@@ -27,10 +27,6 @@ function createWindow () {
     useContentSize: true,
     width: 1000
   })
-
-  // ATTENTION removes the default top menu
-  mainWindow.setMenu(null);
-
   mainWindow.loadURL(winURL)
 
   mainWindow.on('closed', () => {
@@ -39,6 +35,11 @@ function createWindow () {
 }
 
 app.on('ready', createWindow)
+
+// ATTENTION removes the default top menu
+app.on('browser-window-created',function(e,window) {
+  window.setMenu(null);
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
