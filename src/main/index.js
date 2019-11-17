@@ -28,6 +28,9 @@ function createWindow () {
     width: 1000
   })
 
+  // ATTENTION removes the default top menu
+  mainWindow.setMenu(null);
+
   mainWindow.loadURL(winURL)
 
   mainWindow.on('closed', () => {
