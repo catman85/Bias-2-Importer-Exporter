@@ -14,8 +14,12 @@ const readfile = util.promisify(fs.readFile);
 const writefile = util.promisify(fs.writeFile);
 const readdir = util.promisify(fs.readdir);
 
-import {mapState} from 'vuex'
-
+import {
+    mapState
+} from 'vuex'
+import {
+    EventBus
+} from '../plugins/event-bus.js';
 
 const myMixins = {
     data() {
@@ -30,39 +34,52 @@ const myMixins = {
             bankJsonRelPath: this.nativePath('/BIAS_FX2/GlobalPresets/bank.json'),
             banks: [],
             presets: [],
+            objType: Object.freeze({ // enum
+                "BANK": 0,
+                "PRESET": 1
+            }),
+            importType: Object.freeze({ // enum
+                "MOVE": 0,
+                "COPY": 1
+            }),
+            deleteType: Object.freeze({ // enum
+                "JUSTDOIT": 0,
+                "NOTSURE": 1
+            }),
         }
     },
     computed: { // having global computed properties renders vuex store useless but whatever
         ...mapState({
-          isDirSet: state => state.Directory.isDirSet,
-          selectedBankFolder: (state) => {
-            // this.init()
-            return state.Directory.selectedBankFolder
-          },
-          banksChild: state => state.Directory.banks
+            isDirSet: state => state.Directory.isDirSet,
+            selectedBankFolder: (state) => {
+                // this.init()
+                return state.Directory.selectedBankFolder
+            },
+            banksChild: state => state.Directory.banks
         }),
         positiveGridPath: function () {
-          if (this.$store.state.Directory.isDirSet) {
-            return this.$store.state.Directory.dir;
-          } else {
-            return this.nativePath(this.docPath + "/PositiveGrid");
-          }
+            if (this.$store.state.Directory.isDirSet) {
+                return this.$store.state.Directory.dir;
+            } else {
+                return this.nativePath(this.docPath + "/PositiveGrid");
+            }
         },
         checkMainDirectoryValidity: function () {
-          return this.checkIfDirectoriesExists(this.positiveGridPath + this.bankJsonRelPath)
+            return this.checkIfDirectoriesExists(this.positiveGridPath + this.bankJsonRelPath)
         },
         presetJsonPath: function () {
-          return this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder +
-            '/preset.json');
+            return this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder +
+                '/preset.json');
         },
         selectedBankPath: function () {
-        //   this.init() // ATTENTION everytime the main dir or selected bank is changed we trigger an UI change
-          return this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
+            // ATTENTION everytime the main dir or selected bank is changed we trigger an UI change
+            EventBus.$emit('init');
+            return this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
         },
-        banksC: function() {
+        banksC: function () {
             return this.banks
         }
-      },
+    },
     methods: {
         showStateStuff() {
             console.debug(this.$store.state.Directory.isDirSet)
@@ -158,7 +175,7 @@ const myMixins = {
 
         },
         checkIfDirectoriesExists(...paths) {
-            console.debug(paths)
+            // console.debug(paths)
             let bool = true
             for (let i in paths) {
                 if (fs.existsSync(paths[i])) { // this.directory + this.bankJsonRelPath

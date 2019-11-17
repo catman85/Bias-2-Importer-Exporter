@@ -51,29 +51,11 @@
         },
         data() {
             return {
-                init: this.$parent.init, // not used
                 importPresetFunc: this.$parent.importPreset,
-                importType: Object.freeze({
-                    "MOVE": 0,
-                    "COPY": 1
-                }),
-                deleteType: Object.freeze({
-                    "JUSTDOIT": 0,
-                    "NOTSURE": 1
-                }),
-                direction: Object.freeze({
-                    "UP": 0,
-                    "DOWN": 1
-                }),
             }
-        },
-        updated() {},
-        mounted() {
-
         },
         methods: {
             callParent() {
-                // this.init();
                 EventBus.$emit('init');
             },
             bootFav(bool) {

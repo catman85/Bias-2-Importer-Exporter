@@ -10,13 +10,7 @@
     <system-information></system-information>
     <div v-if="checkMainDirectoryValidity">
       <div v-for="b in this.banks" :key="b.bank_folder">
-        <div @click="selectBank(b.bank_folder)">
-          {{b.bank_name}}
-          {{b.display_order}}
-        </div>
-        <div @click="selectPresetsDialog(b)">Import Presets</div>
-        <div @click="showNewNamePrompt(b)">rename bank</div>
-        <br>
+        <bank-card :bank="b"></bank-card>
       </div>
       <br>
     </div>
@@ -50,6 +44,7 @@
   } = require('electron').remote
 
   import SystemInformation from '@/components/SystemInformation.vue'
+  import BankCard from '@/components/BankCard.vue'
   import PresetCard from '@/components/PresetCard.vue'
 
   const util = require('util');
@@ -57,20 +52,9 @@
   const prompt = require('electron-prompt');
 
   export default {
-    data() {
-      return {
-        objType: Object.freeze({
-          "BANK": 0,
-          "PRESET": 1
-        }),
-        importType: Object.freeze({
-          "MOVE": 0,
-          "COPY": 1
-        }),
-      }
-    },
     components: {
       SystemInformation,
+      BankCard,
       PresetCard
     },
     mounted() {
@@ -119,12 +103,6 @@
             console.log(folderPaths)
           }
         })
-      },
-      async selectBank(folderName) {
-        // const dispatch = util.promisify(this.$store.dispatch);
-        console.debug(folderName);
-        // triggers init()
-        this.$store.dispatch('setBank', folderName)
       },
       async showNewNamePrompt(obj) {
         // figuring out the type of the object
@@ -199,28 +177,6 @@
 
         await this.updateJson(path, jsonQobj)
         this.init();
-      },
-      async selectPresetsDialog(bank) {
-        dialog.showOpenDialog({
-          title: 'Select presets to import',
-          properties: ['openDirectory', 'multiSelections']
-        }, async (folderPaths) => {
-          // folderPaths is an array that contains all the selected paths
-          if (folderPaths === undefined) {
-            console.log('No preset folders selected')
-            return;
-          } else {
-            var funct = this.importPreset
-            var type = this.importType.COPY
-            // func reference accessible in nameless func
-            // problems with closures if we use importPreset directly it wont work
-            this.asyncForEach(folderPaths,
-              async function (path) {
-                // console.debug(path)
-                await funct(path, bank, type)
-              });
-          }
-        })
       },
       async importPreset(path, bank, importType) {
         let pathMeta = this.nativePath(path + '/meta.json')
