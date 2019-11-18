@@ -2,7 +2,11 @@
     <div>
         <b-card>
             <b-card-img-lazy :src="getThumbnail(preset.preset_uuid)"></b-card-img-lazy>
-            <b-card-title @click="changePresetName(preset)">{{preset.preset_name}}</b-card-title>
+            <div v-b-tooltip.hover.right title="Rename">
+                <b-card-title @click="changePresetName(preset)">
+                    {{preset.preset_name}}
+                </b-card-title>
+            </div>
             <b-card-text>
                 <!-- {{preset.display_order}} -->
                 {{preset.preset_uuid}}
@@ -11,21 +15,23 @@
                 {{bootFav(preset.is_favorite)}}
             </b-badge>
             <b-button-group>
-            <b-dropdown dropright size="sm" variant="outline-primary">
-                <template v-slot:button-content>
-                    <strong>Move</strong> to <em>bank</em>
-                </template>
-                <!-- ATTENTION if you use this.banksC it won't work -->
-                <b-dropdown-item v-for="b in this.banksChild" :key="b.bank_folder" @click='movePresetTo(b,preset)'>
-                    {{b.bank_name}}</b-dropdown-item>
-            </b-dropdown>
+                <b-dropdown dropright size="sm" variant="outline-primary">
+                    <template v-slot:button-content>
+                        <strong>Move</strong> to <em>bank</em>
+                    </template>
+                    <!-- ATTENTION if you use this.banksC it won't work -->
+                    <b-dropdown-item v-for="b in this.banksChild" :key="b.bank_folder" @click='movePresetTo(b,preset)'>
+                        {{b.bank_name}}</b-dropdown-item>
+                </b-dropdown>
 
 
-            <b-button variant="outline-info" @click="exportPreset(preset.preset_uuid)">Export</b-button>
+                <b-button variant="outline-info" @click="exportPreset(preset.preset_uuid)">Export</b-button>
             </b-button-group>
             <b-button @click="deletePreset(preset,deleteType.NOTSURE)" variant="outline-danger">Delete</b-button>
-            <div @click="changeOrder(direction.UP,preset)">UP</div>
-            <div @click="changeOrder(direction.DOWN,preset)">DOWN</div>
+            <div class="arrows">
+                <img @click="changeOrder(direction.UP,preset)" id="left-arrow" src="~@/assets/left-arrow.png">
+                <img @click="changeOrder(direction.DOWN,preset)" id="right-arrow" src="~@/assets/right-arrow.png">
+            </div>
         </b-card>
     </div>
 </template>
@@ -59,8 +65,7 @@
         },
         data() {
             return {
-                importPresetFunc: this.$parent.importPreset,
-                myBankPath: this.selectedBankPath
+                importPresetFunc: this.$parent.importPreset
             }
         },
         methods: {
@@ -236,7 +241,7 @@
                 if (preset.display_order == 0 && dir == this.direction.UP) {
                     console.debug("Can't go up")
                     return
-                } else if ((preset.display_order == this.presets.length - 1) && dir == this.direction.DOWN) {
+                } else if ((preset.display_order == this.$parent.presets.length - 1) && dir == this.direction.DOWN) {
                     console.debug("Can't go down")
                     return
                 }

@@ -1,55 +1,58 @@
-#app{
-    // background-color: grey;
-    // color: black;
+h1 {
+    // max-width: 50%;
 }
 
-h1{
-    color: red;
-}
-
-header{
-    // padding: 5rem;
-    height: 20%;
-}
-
-.card{
+.card {
     // margin: 0 1rem 1rem 1rem; // no top
     margin: 0.5rem;
     min-width: 10rem;
     max-width: 20rem;
-    .card-body{
+
+    .card-body {
         padding: 0.8rem;
-        > *{ // all children (not granchildren)
+
+        >* {
+            // all children (not granchildren)
             margin: 0.2rem;
         }
     }
 }
 
-.quick-menu{
-    z-index: 5;
+.arrows {
+    display: flex;
+    >* {
+        // margin: 0 auto;
+        max-height: 0.8rem;
+    }
 }
 
-.pre-wrapper{
-    display:grid;
+.quick-menu {
+    z-index: 5;
+    top: 0.3rem !important;
+    left: 0.3rem !important;
+}
+
+.pre-wrapper {
+    display: grid;
     grid-template-columns: auto auto auto;
 }
+
 .split {
-    height: 80%;
+    height: 90%;
     position: fixed;
     // z-index: 1;
     bottom: 0;
     overflow-x: hidden;
     display: initial;
+
     // padding-top: 4rem;
     &.left {
-        width:30%;
+        width: 20%;
         left: 0;
-      }
-    &.right {
-        width: 70%;
-        right: 0;
-      }
-  }
+    }
 
- 
-  
+    &.right {
+        width: 80%;
+        right: 0;
+    }
+}
