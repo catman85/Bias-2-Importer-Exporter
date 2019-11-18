@@ -1,4 +1,8 @@
 // ATTENTION Remember that mutations have to be synchronous. Actions don't. We can perform asynchronous operations inside an action:
+
+import {
+  EventBus
+} from '@/plugins/event-bus.js';
 const state = {
   isDirSet: false,
   dir: String,
@@ -18,6 +22,8 @@ const mutations = {
     } else {
       state.isDirSet = true
     }
+    // refresh UI
+    EventBus.$emit('init');
   },
   SET_BANKS(state, {
     banks
@@ -27,11 +33,10 @@ const mutations = {
   SET_BANK(state, {
     bankFolder
   }) {
-    // console.log("test")
-    // return new Promise((res, rej) => {
-      state.selectedBankFolder = bankFolder
-      // res(bankFolder)
-    // })
+
+    state.selectedBankFolder = bankFolder
+    // refresh UI
+    EventBus.$emit('init');
   }
 
 }
@@ -56,11 +61,11 @@ const actions = {
   setBank({
     commit
   }, payload) {
-      // I can't make this work
-      // https://stackoverflow.com/questions/42195971/how-can-i-get-response-of-this-store-dispatch-on-the-vue-js-2
-      commit('SET_BANK', {
-        'bankFolder': payload
-      })
+    // I can't make this work
+    // https://stackoverflow.com/questions/42195971/how-can-i-get-response-of-this-store-dispatch-on-the-vue-js-2
+    commit('SET_BANK', {
+      'bankFolder': payload
+    })
   }
 }
 

@@ -33,7 +33,7 @@ const myMixins = {
             docPath: require('electron').remote.app.getPath('documents'), // getting native documents path
             bankJsonRelPath: this.nativePath('/BIAS_FX2/GlobalPresets/bank.json'),
             banks: [],
-            presets: [],
+            presets: null,
             objType: Object.freeze({ // enum
                 "BANK": 0,
                 "PRESET": 1
@@ -46,6 +46,10 @@ const myMixins = {
                 "JUSTDOIT": 0,
                 "NOTSURE": 1
             }),
+            direction: Object.freeze({
+                "UP": 0,
+                "UP": 1
+            })
         }
     },
     computed: { // having global computed properties renders vuex store useless but whatever
@@ -73,7 +77,7 @@ const myMixins = {
         selectedBankPath: function () {
             // ATTENTION everytime the main dir or selected bank is changed we trigger an UI change
             // ATTENTION we need to put this property in template to trigger a change
-            EventBus.$emit('init');
+            // EventBus.$emit('init');
             
             return this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
         },
@@ -149,9 +153,6 @@ const myMixins = {
                     }).parent().value();
                 })
             // console.debug(jsonQobj.find(identifier).value())
-
-
-
             for (let b in entries) {
                 result.push(entries[b]);
             }

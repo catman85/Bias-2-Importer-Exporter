@@ -1,26 +1,32 @@
 <template>
     <div>
-        <b-dropdown dropright size="sm" variant="outline-primary">
-            <template v-slot:button-content>
-                <strong>Move</strong> to <em>bank</em>
-            </template>
-            <!-- ATTENTION if you use this.banksC it won't work -->
-            <b-dropdown-item v-for="b in this.banksChild" :key="b.bank_folder" @click='movePresetTo(b,preset)'>
-                {{b.bank_name}}</b-dropdown-item>
-        </b-dropdown>
+        <b-card>
+            <b-card-img-lazy :src="getThumbnail(preset.preset_uuid)"></b-card-img-lazy>
+            <b-card-title @click="changePresetName(preset)">{{preset.preset_name}}</b-card-title>
+            <b-card-text>
+                <!-- {{preset.display_order}} -->
+                {{preset.preset_uuid}}
+            </b-card-text>
+            <b-badge pill @click="favoriteChange(preset)" :variant="bootBadge(preset.is_favorite)">
+                {{bootFav(preset.is_favorite)}}
+            </b-badge>
+            <b-button-group>
+            <b-dropdown dropright size="sm" variant="outline-primary">
+                <template v-slot:button-content>
+                    <strong>Move</strong> to <em>bank</em>
+                </template>
+                <!-- ATTENTION if you use this.banksC it won't work -->
+                <b-dropdown-item v-for="b in this.banksChild" :key="b.bank_folder" @click='movePresetTo(b,preset)'>
+                    {{b.bank_name}}</b-dropdown-item>
+            </b-dropdown>
 
-        <!-- works from here and down -->
-        <div @click="exportPreset(preset.preset_uuid)">
-            {{preset.display_order}}
-            {{preset.preset_uuid}}
-        </div>
-        <div @click="changePresetName(preset)">{{preset.preset_name}}</div>
-        <b-badge pill @click="favoriteChange(preset)" :variant="bootBadge(preset.is_favorite)">
-            {{bootFav(preset.is_favorite)}}
-        </b-badge>
-        <div @click="deletePreset(preset,deleteType.NOTSURE)">DELETE</div>
-        <div @click="changeOrder(direction.UP,preset)">UP</div>
-        <div @click="changeOrder(direction.DOWN,preset)">DOWN</div>
+
+            <b-button variant="outline-info" @click="exportPreset(preset.preset_uuid)">Export</b-button>
+            </b-button-group>
+            <b-button @click="deletePreset(preset,deleteType.NOTSURE)" variant="outline-danger">Delete</b-button>
+            <div @click="changeOrder(direction.UP,preset)">UP</div>
+            <div @click="changeOrder(direction.DOWN,preset)">DOWN</div>
+        </b-card>
     </div>
 </template>
 
@@ -41,6 +47,8 @@
         dialog
     } = require('electron').remote
 
+    const fs = require('fs-extra')
+
     import swal from 'sweetalert';
 
     export default {
@@ -52,6 +60,7 @@
         data() {
             return {
                 importPresetFunc: this.$parent.importPreset,
+                myBankPath: this.selectedBankPath
             }
         },
         methods: {
@@ -71,6 +80,16 @@
                 } else {
                     return "light"
                 }
+            },
+            getThumbnail(uuid) {
+                let path = this.nativePath(this.selectedBankPath + '/' + uuid + '/thumbnail.png')
+                let logo;
+                try {
+                    logo = fs.readFileSync(path).toString('base64');
+                } catch (err) {
+
+                }
+                return 'data:image/png;base64,' + logo
             },
             changePresetName(preset) {
                 EventBus.$emit('changeNamePreset', preset);

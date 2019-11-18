@@ -12,8 +12,26 @@ header{
     height: 20%;
 }
 
+.card{
+    // margin: 0 1rem 1rem 1rem; // no top
+    margin: 0.5rem;
+    min-width: 10rem;
+    max-width: 20rem;
+    .card-body{
+        padding: 0.8rem;
+        > *{ // all children (not granchildren)
+            margin: 0.2rem;
+        }
+    }
+}
+
 .quick-menu{
     z-index: 5;
+}
+
+.pre-wrapper{
+    display:grid;
+    grid-template-columns: auto auto auto;
 }
 .split {
     height: 80%;
@@ -21,13 +39,14 @@ header{
     // z-index: 1;
     bottom: 0;
     overflow-x: hidden;
+    display: initial;
     // padding-top: 4rem;
     &.left {
-        width:40%;
+        width:30%;
         left: 0;
       }
     &.right {
-        width: 60%;
+        width: 70%;
         right: 0;
       }
   }

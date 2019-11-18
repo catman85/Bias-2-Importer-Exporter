@@ -7,18 +7,25 @@
       <br>
     </div>
 
-    <div class="split right" v-if="this.presets.length">
-      <div show v-for="p in this.presets" :key="p.preset_folder">
-        <preset-card :preset="p" :banks='banks'></preset-card>
-        <br>
+    <div class="split right">
+      <div v-if="!this.presets">
+        <p>Loading...</p>
+      </div>
+      <div v-else>
+        <div v-if="this.presets.length" class="pre-wrapper">
+          <div v-for="p in this.presets" :key="p.preset_folder">
+            <preset-card :preset="p" :banks='banks'></preset-card>
+            <br>
+          </div>
+        </div>
+        <div v-else-if="this.presets.length === 0">
+          <p>No Presets in this folder</p>
+        </div>
       </div>
     </div>
-    <div v-else>
-      <br>
-      <p>No presets in this folder</p>
-    </div>
+
     <!-- ATTENTION we use this to trigger the computed property -->
-    <div style="visibility: hidden;">{{this.selectedBankPath}}</div>
+    <!-- <div style="visibility: hidden;">{{this.selectedBankPath}}</div> -->
   </div>
 </template>
 
@@ -49,9 +56,11 @@
     mounted() {
       // you could use async computed properties instead
       this.init();
+
       // this.$root.$on('bv::dropdown::show', bvEvent => {
       //   console.log('Dropdown is about to be shown', bvEvent)
       // })
+
       EventBus.$on('init', () => {
         this.init()
       });
