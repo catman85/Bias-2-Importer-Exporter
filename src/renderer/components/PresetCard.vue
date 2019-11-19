@@ -1,8 +1,8 @@
 <template>
     <div>
-        <b-card>
+        <b-card bg-variant="dark" text-variant="white" border-variant="light">
             <b-card-img-lazy :src="getThumbnail(preset.preset_uuid)"></b-card-img-lazy>
-            <div v-b-tooltip.hover.right title="Rename">
+            <div v-b-tooltip.hover.bottom="{ variant: 'info' }" title="Rename" class="clickable">
                 <b-card-title @click="changePresetName(preset)">
                     {{preset.preset_name}}
                 </b-card-title>
@@ -11,11 +11,12 @@
                 <!-- {{preset.display_order}} -->
                 {{preset.preset_uuid}}
             </b-card-text>
-            <b-badge pill @click="favoriteChange(preset)" :variant="bootBadge(preset.is_favorite)">
+            <b-badge class="clickable" pill @click="favoriteChange(preset)" :variant="bootBadge(preset.is_favorite)">
                 {{bootFav(preset.is_favorite)}}
             </b-badge>
+            <br>
             <b-button-group>
-                <b-dropdown dropright size="sm" variant="outline-primary">
+                <b-dropdown dropright size="sm" variant="primary">
                     <template v-slot:button-content>
                         <strong>Move</strong> to <em>bank</em>
                     </template>
@@ -25,13 +26,13 @@
                 </b-dropdown>
 
 
-                <b-button variant="outline-info" @click="exportPreset(preset.preset_uuid)">Export</b-button>
+                <b-button variant="info" @click="exportPreset(preset.preset_uuid)">Export</b-button>
             </b-button-group>
-            <b-button @click="deletePreset(preset,deleteType.NOTSURE)" variant="outline-danger">Delete</b-button>
-            <div class="arrows">
+            <b-button @click="deletePreset(preset,deleteType.NOTSURE)" variant="danger">Delete</b-button>
+            <!-- <div class="arrows clickable">
                 <img @click="changeOrder(direction.UP,preset)" id="left-arrow" src="~@/assets/left-arrow.png">
                 <img @click="changeOrder(direction.DOWN,preset)" id="right-arrow" src="~@/assets/right-arrow.png">
-            </div>
+            </div> -->
         </b-card>
     </div>
 </template>

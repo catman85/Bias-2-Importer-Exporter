@@ -1,12 +1,20 @@
 <template>
-    <div>
-        <div @click="selectBank(bank.bank_folder)">
-            {{bank.bank_name}}
-            {{bank.display_order}}
-        </div>
-        <div @click="selectPresetsDialog(bank)">Import Presets</div>
-        <div @click="$parent.showNewNamePrompt(bank)">rename bank</div>
-        <br>
+    <div @click="selectBank(bank.bank_folder)" class="clickable">
+        <b-card bg-variant="dark" text-variant="white" class="bank-card" :border-variant="amITheCurrentBank(bank.bank_folder)">
+            
+                <b-card-title class="center-text" @click="$parent.showNewNamePrompt(bank)">
+                    <div v-b-tooltip.hover title="Rename Bank" class="bank-card-title">
+                    {{bank.bank_name}}
+                    </div>
+                    <!-- {{bank.display_order}} -->
+                </b-card-title>
+            <b-card-footer>
+
+                <b-button @click="selectPresetsDialog(bank)">Import Presets</b-button>
+                <!-- <b-button >Rename Bank</b-button> -->
+            </b-card-footer>
+
+        </b-card>
     </div>
 </template>
 
@@ -30,6 +38,13 @@
                 this.$store.dispatch('setBank', folderName)
                 // await this.sleep(50) // FIXME:
                 // this.$parent.init();
+            },
+            amITheCurrentBank(folder){
+                if(folder == this.selectedBankFolder){
+                    return 'warning'
+                }else{
+                    return 'light'
+                }     
             },
             async selectPresetsDialog(bank) {
                 dialog.showOpenDialog({

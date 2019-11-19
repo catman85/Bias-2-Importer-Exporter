@@ -14,7 +14,7 @@
       <div v-else>
         <div v-if="this.presets.length" class="pre-wrapper">
           <div v-for="p in this.presets" :key="p.preset_folder">
-            <preset-card :preset="p" :banks='banks'></preset-card>
+            <preset-card :preset="p"></preset-card>
             <br>
           </div>
         </div>
@@ -60,6 +60,7 @@
       // this.$root.$on('bv::dropdown::show', bvEvent => {
       //   console.log('Dropdown is about to be shown', bvEvent)
       // })
+      console.debug(this.selectedBankFolder)
 
       EventBus.$on('init', () => {
         this.init()

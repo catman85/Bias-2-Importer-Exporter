@@ -80,9 +80,6 @@ const myMixins = {
             // EventBus.$emit('init');
             
             return this.nativePath(this.positiveGridPath + '/BIAS_FX2/GlobalPresets/' + this.selectedBankFolder);
-        },
-        banksC: function () {
-            return this.banks
         }
     },
     methods: {
