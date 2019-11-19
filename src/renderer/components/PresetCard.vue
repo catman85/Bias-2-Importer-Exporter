@@ -142,7 +142,7 @@
                 if (type === this.deleteType.NOTSURE) {
                     const willDelete = await swal({
                         title: "Are you sure?",
-                        text: "Are you sure that you want to delete" + preset.preset_name + "?",
+                        text: "Are you sure that you want to delete " + preset.preset_name + "?",
                         icon: "warning",
                         dangerMode: true,
                     });

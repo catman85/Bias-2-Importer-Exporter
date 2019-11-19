@@ -8,8 +8,8 @@
     </div>
 
     <div class="split right">
-      <div v-if="!this.presets">
-        <p>Loading...</p>
+      <div v-if="!this.presets" class="center-text">
+        <b-spinner variant="primary" label="Spinning"></b-spinner>
       </div>
       <div v-else>
         <div v-if="this.presets.length" class="pre-wrapper">

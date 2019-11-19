@@ -1,5 +1,33 @@
-h1 {
-    // max-width: 50%;
+header {
+    text-align: center;
+    color: white;
+    background-color: grey;
+    h3 {
+        display: inline-block;
+        margin-top: 0.25rem;
+        button {
+            margin-left: 1rem;
+        }
+    }
+    .radial-menu{
+        // margin-left: 10px; margin-top: -3rem;
+        background-color: #17c4c5;
+        z-index: 5 !important;
+        position: fixed;
+        top: 0.5rem;
+        left: 0.5rem;
+        .radial-menu-item{
+            background-color: #17c4c5;
+            i{
+                font-size: 30px;
+            }
+        }
+
+        .vue-radial-menu-container{
+            height: 43px !important;
+            // width: 51px !important;
+        }
+    }
 }
 
 .card {
@@ -17,34 +45,36 @@ h1 {
         }
     }
 
-    .card-footer{
+    .card-footer {
         padding: 0 1.25rem;
-        *{
+
+        * {
             margin: 0 auto;
         }
     }
 }
 
-.center-text{
+.center-text {
     text-align: center;
 }
 
-.clickable{
-    cursor: pointer; 
+.clickable {
+    cursor: pointer;
 }
 
-.bank-card-title{
+.bank-card-title {
     word-wrap: break-word;
 }
 
-.bank-card{
-    h4{
+.bank-card {
+    h4 {
         width: max-content;
         max-width: 80%;
         margin: 0 auto !important;
         margin-bottom: 0.8rem !important;
     }
-    .card-footer{
+
+    .card-footer {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -53,6 +83,7 @@ h1 {
 
 .arrows {
     display: flex;
+
     >* {
         // margin: 0 auto;
         max-height: 0.8rem;
@@ -71,7 +102,7 @@ h1 {
 }
 
 .split {
-    height: 90%;
+    height: 93%;
     position: fixed;
     // z-index: 1;
     bottom: 0;
