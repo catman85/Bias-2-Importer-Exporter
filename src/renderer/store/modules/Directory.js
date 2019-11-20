@@ -1,8 +1,12 @@
-// ATTENTION Remember that mutations have to be synchronous. Actions don't. We can perform asynchronous operations inside an action:
+// ATTENTION Remember that mutations have to be synchronous. Actions don't. 
+// We can perform asynchronous operations inside an action:
 
+
+// '@' is not recognized here
 import {
   EventBus
-} from '@/plugins/event-bus.js';
+} from '../../plugins/event-bus';
+
 const state = {
   isDirSet: false,
   dir: String,

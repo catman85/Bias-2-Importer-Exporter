@@ -8,15 +8,18 @@
     <!-- <button class="alt" @click='listFolder(positiveGridPath)'>list</button> -->
     <!-- <quick-menu :menu-count=count :icon-class=icons :menu-url-list=list></quick-menu> -->
     <radial-menu class="radial-menu"
-      :itemSize="50"
+      :itemSize="60"
       :radius="110"
       :rotate="180"
       :angle-restriction="90">
         <radial-menu-item class="radial-menu-item"
-          v-for="(item, index) in this.items" 
+          v-for="(item, index) in this.icons" 
           :key="index" 
           @click="() => handleClick(item)">
-          <span><i class="fab fa-github"></i></span>
+          <span>
+            <!-- ATTENTION dynamic component -->
+            <component :is="icons[index]"></component>
+          </span>
         </radial-menu-item>
       </radial-menu>
   </header>
@@ -25,6 +28,9 @@
 
 <script>
   import quickMenu from 'vue-quick-menu'
+  import githubSvg from '../assets/github-svg'
+  import homeSvg from '../assets/home-svg'
+  import infoSvg from '../assets/info-svg'
   import {
     RadialMenu,
     RadialMenuItem
@@ -36,30 +42,15 @@
   export default {
     components: {
       quickMenu,
+      githubSvg,
+      homeSvg,
+      infoSvg,
       RadialMenu,
       RadialMenuItem
     },
     data() {
       return {
-        position: 'top-right',
-        count: 3,
-        icons: ["fas fa-home", "fas fa-info-circle", "fab fa-github-alt"],
-        list: [{
-            'isLink': true,
-            url: "/"
-          }, {
-            'isLink': true,
-            url: "/sys-info"
-          },
-          {
-            'isLink': false,
-            url: "https://github.com/catman85/Bias-2-Importer-Exporter",
-            isOpenNewTab: true
-          }
-        ],
-              items: ['foo', 'bar', 'hello', 'world'],
-        backgroundColor: '#17c4c5',
-        color: '#ffffff',
+        icons: ["home-svg","info-svg","github-svg"],
       }
     },
     methods: {
