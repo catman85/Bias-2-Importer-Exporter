@@ -9,7 +9,7 @@
     <!-- <quick-menu :menu-count=count :icon-class=icons :menu-url-list=list></quick-menu> -->
     <radial-menu class="radial-menu"
       :itemSize="60"
-      :radius="110"
+      :radius="95"
       :rotate="180"
       :angle-restriction="90">
         <radial-menu-item class="radial-menu-item"
@@ -78,7 +78,13 @@
         })
       },
       handleClick(item) {
-       console.debug(item)
+       if(item=='info-svg'){
+         this.$router.push({path: "/sys-info"})
+       }else if(item=='home-svg'){
+         this.$router.push({path: "/"})
+       }else if(item=='github-svg'){
+         window.open('https://github.com/catman85/Bias-2-Importer-Exporter', '_blank', 'nodeIntegration=no')
+       }
       }
     }
   }
