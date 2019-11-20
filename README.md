@@ -1,8 +1,9 @@
-# bias-2-ie
+# Bias FX 2 Preset Importer / Exporter
 
 > An app that allows you to import and export presets for Positive Grid's Bias Fx 2 software
 
-#### Build Setup
+
+#### Development Setup
 
 ``` bash
 # install dependencies
@@ -11,19 +12,25 @@ npm install
 # serve with hot reload at localhost:9080
 npm run dev
 
-# build electron application for production
-npm run build
-
-
 # lint all JS/Vue component files in `src/`
-npm run lint
 # ESlint caused problems with hot reload so I removed it
-
-#if you get permission problems or problems with libdbus just delete your local instance and git clone again
+npm run lint
 
 ```
 
-### To develop in windows, delete any previous installations and run the above commands with **Powershell Only**
+#### Build Setup
+
+``` bash
+
+# build electron application for production
+npm rebuild node-sass
+sudo npm run build:dir
+
+```
+
+#### If you get permission problems or problems with libdbus just delete your local instance and git clone again
+
+#### To develop in windows, delete any previous installations and run the above commands with **Powershell Only**
 
 ---
 
