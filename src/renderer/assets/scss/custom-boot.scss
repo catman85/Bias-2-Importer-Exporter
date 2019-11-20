@@ -36,8 +36,14 @@ header {
     }
 }
 
+.logo{
+    width: 70%;
+}
+
 .card {
     // margin: 0 1rem 1rem 1rem; // no top
+    border: 0.15rem solid rgba(0, 0, 0, 0.125) !important;
+    border-radius: 1.1rem !important;
     margin: 0.5rem;
     min-width: 10rem;
     max-width: 20rem;
@@ -87,6 +93,10 @@ header {
     }
 }
 
+.jumbotron{
+    margin: 2rem;
+}
+
 .arrows {
     display: flex;
 
@@ -114,7 +124,7 @@ header {
     bottom: 0;
     overflow-x: hidden;
     display: initial;
-    background-color: grey;
+    background-color: lightgrey;
 
     // padding-top: 4rem;
     &.left {

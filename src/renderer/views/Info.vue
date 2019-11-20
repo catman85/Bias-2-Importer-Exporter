@@ -1,9 +1,11 @@
 <template>
     <div>
-        <b-jumbotron header="BootstrapVue" lead="Bootstrap v4 Components for Vue.js 2">
-            <p>For more information visit website</p>
-            <b-button v-b-toggle.collapse-1 variant="primary">Toggle Collapse</b-button>
-            <br>
+        <b-jumbotron header="Info" lead="This app was made with electron-vue">
+            <p><img class="logo" src="@/assets/logo.png" alt=""></p>
+            <p>Get the source <a href="https://github.com/catman85/Bias-2-Importer-Exporter" target="_blank">here.</a></p>
+            <p>Donate by downloading this app from here: <a href="">link1</a> <a href="">link2</a></p>
+            <p>More information on application's state.</p>
+            <b-button v-b-toggle.collapse-1 variant="primary">Show Info</b-button>
             <b-collapse id="collapse-1" class="mt-2">
                 <b-list-group>
                     <b-list-group-item> Is Positive Grid Folder set? {{isDirSet}}</b-list-group-item>
