@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="home-page">
     <div class="split left" v-if="checkMainDirectoryValidity">
       <div v-for="b in this.banks" :key="b.bank_folder">
         <bank-card :bank="b"></bank-card>

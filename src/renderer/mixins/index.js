@@ -13,6 +13,7 @@ const prompt = require('electron-prompt');
 const readfile = util.promisify(fs.readFile);
 const writefile = util.promisify(fs.writeFile);
 const readdir = util.promisify(fs.readdir);
+const { shell } = require('electron');
 
 import {
     mapState
@@ -87,6 +88,9 @@ const myMixins = {
         }
     },
     methods: {
+        openLinkInDefaultBrowser(url){
+            shell.openExternal(url)
+        },
         showStateStuff() {
             console.debug(this.$store.state.Directory.isDirSet)
             if (this.$store.state.Directory.isDirSet) {

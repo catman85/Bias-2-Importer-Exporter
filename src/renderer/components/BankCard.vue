@@ -33,11 +33,10 @@
         },
         methods: {
             async selectBank(folderName) {
-                // const dispatch = util.promisify(this.$store.dispatch);
                 console.debug(folderName);
                 // triggers init()
                 this.$store.dispatch('setBank', folderName)
-                // await this.sleep(50) // FIXME:
+                // await this.sleep(50)
                 // this.$parent.init();
             },
             amITheCurrentBank(folder) {
