@@ -77,7 +77,7 @@
         // this.banks = []
         // this.presets = []
         this.banks = await this.getJson(this.positiveGridPath + this.bankJsonRelPath, 'bank_name')
-        this.$store.dispatch('setBanks', this.banks)
+        this.$store.dispatch('setBanks', this.banks) // for the dropdown
         this.presets = await this.getJson(this.presetJsonPath, 'preset_name')
       },
       async showNewNamePrompt(obj) {

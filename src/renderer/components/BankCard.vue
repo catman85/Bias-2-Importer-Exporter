@@ -1,13 +1,14 @@
 <template>
     <div @click="selectBank(bank.bank_folder)" class="clickable">
-        <b-card bg-variant="dark" text-variant="white" class="bank-card" :border-variant="amITheCurrentBank(bank.bank_folder)">
-            
-                <b-card-title class="center-text" @click="$parent.showNewNamePrompt(bank)">
-                    <div v-b-tooltip.hover title="Rename Bank" class="bank-card-title">
+        <b-card bg-variant="dark" text-variant="white" class="bank-card"
+            :border-variant="amITheCurrentBank(bank.bank_folder)">
+
+            <b-card-title class="center-text" @click="$parent.showNewNamePrompt(bank)">
+                <div v-b-tooltip.hover title="Rename Bank" class="bank-card-title">
                     {{bank.bank_name}}
-                    </div>
-                    <!-- {{bank.display_order}} -->
-                </b-card-title>
+                </div>
+                <!-- {{bank.display_order}} -->
+            </b-card-title>
             <b-card-footer>
 
                 <b-button @click="selectPresetsDialog(bank)">Import Presets</b-button>
@@ -39,12 +40,12 @@
                 // await this.sleep(50) // FIXME:
                 // this.$parent.init();
             },
-            amITheCurrentBank(folder){
-                if(folder == this.selectedBankFolder){
+            amITheCurrentBank(folder) {
+                if (folder == this.selectedBankFolder) {
                     return 'warning'
-                }else{
+                } else {
                     return 'light'
-                }     
+                }
             },
             async selectPresetsDialog(bank) {
                 dialog.showOpenDialog({
@@ -60,10 +61,22 @@
                         var type = this.importType.COPY
                         // func reference accessible in nameless func
                         // problems with closures if we use importPreset directly it wont work
-                        this.asyncForEach(folderPaths,
-                            async function (path) {
-                                // console.debug(path)
-                                await funct(path, bank, type)
+                        await this.asyncForEach(folderPaths,
+                                async function (path) {
+                                    // console.debug(path)
+                                    await funct(path, bank, type)
+                                })
+                            .then((res) => {
+                                swal("Success!", "You just imported " + folderPaths.length +
+                                    " presets to " +
+                                    bank.bank_name + " !", "success");
+                            })
+                            .catch((err) => {
+                                swal({
+                                    title: "Error",
+                                    text: err,
+                                    icon: "error"
+                                })
                             });
                     }
                 })
