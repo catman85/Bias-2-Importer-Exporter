@@ -12,7 +12,7 @@
 
 [![HitCount](http://hits.dwyl.io/catman85/Bias-2-Importer-Exporter.svg)](http://hits.dwyl.io/catman85/Bias-2-Importer-Exporter)
 
-## An app that allows you to import and export presets from *Positive Grid's Bias Fx 2*.
+## An app that allows you to manage *Positive Grid's Bias Fx 2 presets*.
 ![ ](https://i.imgur.com/pOSXJjP.png)
 
 
