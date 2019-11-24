@@ -223,7 +223,7 @@
                 dialog.showOpenDialog({
                     title: 'Select a folder to export the preset to',
                     properties: ['openDirectory']
-                }, (folderPaths) => {
+                },async (folderPaths) => {
                     // folderPaths is an array that contains all the selected paths
                     if (folderPaths === undefined) {
                         console.log('No destination folder selected')
@@ -234,7 +234,11 @@
                         console.debug(selectedPresetPath);
                         console.log(destination)
 
-                        this.copyFromTo(selectedPresetPath, destination)
+                        await this.copyFromTo(selectedPresetPath, destination)
+                        .then(()=>{
+                            swal("Success!", "You just exported: " + uuid + " to "+destination+" !", "success");
+                        })
+                        
                     }
                 })
             },

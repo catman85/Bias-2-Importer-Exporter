@@ -2,7 +2,8 @@
     <div>
         <b-jumbotron header="Info" lead="This app was made with electron-vue">
             <p><img class="logo" src="@/assets/logo.png" alt=""></p>
-            <p>Get the source <a href="https://github.com/catman85/Bias-2-Importer-Exporter" target="_blank">here.</a></p>
+            <p>Get the source 
+                <a ref="gitLink" href="https://github.com/catman85/Bias-2-Importer-Exporter" target="_blank" @click.prevent="openLinkInDefaultBrowser($refs.gitLink.href)">here.</a></p>
             <p>Donate by downloading this app from here: <a href="">link1</a> <a href="">link2</a></p>
             <p>More information on application's state.</p>
             <b-button v-b-toggle.collapse-1 variant="primary">Show Info</b-button>
@@ -27,7 +28,6 @@
         components: {
             SystemInformation
         }
-
     }
 </script>
 

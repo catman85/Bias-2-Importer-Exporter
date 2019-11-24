@@ -13,6 +13,7 @@ const prompt = require('electron-prompt');
 const readfile = util.promisify(fs.readFile);
 const writefile = util.promisify(fs.writeFile);
 const readdir = util.promisify(fs.readdir);
+const { shell } = require('electron');
 
 import {
     mapState
@@ -56,6 +57,10 @@ const myMixins = {
         ...mapState({
             isDirSet: state => state.Directory.isDirSet,
             selectedBankFolder: (state) => {
+                if(!state.Directory.selectedBankFolder){
+                    // return this default path the first time
+                    return 'AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA'
+                }
                 return state.Directory.selectedBankFolder
             },
             banksChild: state => state.Directory.banks
@@ -83,6 +88,9 @@ const myMixins = {
         }
     },
     methods: {
+        openLinkInDefaultBrowser(url){
+            shell.openExternal(url)
+        },
         showStateStuff() {
             console.debug(this.$store.state.Directory.isDirSet)
             if (this.$store.state.Directory.isDirSet) {
@@ -220,7 +228,10 @@ const myMixins = {
         async asyncForEach(array, callback) {
             // ATTENTION classic forEach is not async compatible
             for (let index = 0; index < array.length; index++) {
-                await callback(array[index], index, array);
+                await callback(array[index], index, array)
+                .catch((err)=>{
+                    return this.errorExit(err)
+                });
                 // we dont use index or array
                 // we only use arra[index]    (file)
             }

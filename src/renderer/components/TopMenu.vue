@@ -1,8 +1,7 @@
 <template>
   <header>
     <h3>Bias Preset Importer/Exporter Tool
-      <b-button class="alt" @click='selectPositiveGridFolder()'>Select Folder</b-button>
-      
+      <b-button class="alt" @click='selectPositiveGridFolder()'>Select PositiveGrid Folder</b-button>
     </h3>
     <!-- <button class="alt" @click='showStateStuff()'>shot state</button> -->
     <!-- <button class="alt" @click='listFolder(positiveGridPath)'>list</button> -->
@@ -31,6 +30,7 @@
   import githubSvg from '../assets/github-svg'
   import homeSvg from '../assets/home-svg'
   import infoSvg from '../assets/info-svg'
+
   import {
     RadialMenu,
     RadialMenuItem
@@ -56,7 +56,7 @@
     methods: {
       async selectPositiveGridFolder() {
         dialog.showOpenDialog({
-          title: 'Select a folder',
+          title: 'Select PositiveGrid folder',
           properties: ['openDirectory']
         }, async (folderPaths) => {
           // folderPaths is an array that contains all the selected paths
@@ -83,7 +83,7 @@
        }else if(item=='home-svg'){
          this.$router.push({path: "/"})
        }else if(item=='github-svg'){
-         window.open('https://github.com/catman85/Bias-2-Importer-Exporter', '_blank', 'nodeIntegration=no')
+         this.openLinkInDefaultBrowser('https://github.com/catman85/Bias-2-Importer-Exporter')
        }
       }
     }

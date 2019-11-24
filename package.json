@@ -1,13 +1,15 @@
 {
-  "name": "my-project",
-  "version": "0.0.1",
+  "name": "bias-2-importer-exporter-tool",
+  "version": "1.0.0",
   "author": "jimmy <test@protonmail.com>",
-  "description": "An electron-vue project",
+  "description": "A preset importer exporter tool for Positive Grid's Bias Software. Made with electron-vue project",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
+    "build:winlin": "node .electron-vue/build.js && electron-builder -wl",
+    "build:mac": "node .electron-vue/build.js && electron-builder --mac zip",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
     "dev": "node .electron-vue/dev-runner.js",
@@ -17,8 +19,8 @@
     "postinstall": ""
   },
   "build": {
-    "productName": "my-project",
-    "appId": "com.example.yourapp",
+    "productName": "Bias 2 Importer - Exporter Tool",
+    "appId": "com.jimmypickboy.bias2tool",
     "directories": {
       "output": "build"
     },

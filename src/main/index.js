@@ -20,12 +20,13 @@ const winURL = process.env.NODE_ENV === 'development'
 
 function createWindow () {
   /**
-   * Initial window options
+   * Initial window options 
    */
   mainWindow = new BrowserWindow({
     height: 563,
     useContentSize: true,
-    width: 1000
+    width: 1000,
+    icon: __dirname + '/../../build/icons/icon.ico'
   })
   mainWindow.loadURL(winURL)
 
