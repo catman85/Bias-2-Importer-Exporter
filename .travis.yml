@@ -31,11 +31,11 @@ install:
 - yarn
 script:
 - yarn run build
-before_deploy:
-- cd build
 deploy:
   provider: releases
-  api_key: GITHUB OAUTH TOKEN
+  api_key: "GITHUB OAUTH TOKEN"
+  file_glob: true
+  file: build/*
   skip_cleanup: true
   on:
     tags: true
