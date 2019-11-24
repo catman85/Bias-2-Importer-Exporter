@@ -38,7 +38,8 @@ deploy:
   file: "FILE TO UPLOAD"
   skip_cleanup: true
   on:
-    tags: false
+    tags: true
+    all_branches: true
 branches:
   only:
   - master
