@@ -25,6 +25,8 @@
 - Delete presets
 - Star / unstar presets.
 
+# [Get executables for all platforms by donating](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SLRQJ6XWBLDHY&source=url)
+
 ---
 
 #### Development Setup
