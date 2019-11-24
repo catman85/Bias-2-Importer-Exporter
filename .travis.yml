@@ -31,6 +31,14 @@ install:
 - yarn
 script:
 - yarn run build
+deploy:
+  provider: releases
+  api_key: "GITHUB OAUTH TOKEN"
+  file: "FILE TO UPLOAD"
+  overwrite: true
+  skip_cleanup: true
+  on:
+    tags: true
 branches:
   only:
   - master
