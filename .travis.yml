@@ -36,10 +36,9 @@ deploy:
   api_key: 
     secure: ${GITHUB OAUTH TOKEN}
   file: "FILE TO UPLOAD"
-  overwrite: true
   skip_cleanup: true
   on:
-    tags: true
+    tags: false
 branches:
   only:
   - master
