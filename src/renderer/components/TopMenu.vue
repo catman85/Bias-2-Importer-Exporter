@@ -27,7 +27,7 @@
 </template>
 
 <script>
-  import quickMenu from 'vue-quick-menu'
+  // import quickMenu from 'vue-quick-menu'
   import githubSvg from '../assets/github-svg'
   import homeSvg from '../assets/home-svg'
   import infoSvg from '../assets/info-svg'
@@ -41,7 +41,7 @@
 
   export default {
     components: {
-      quickMenu,
+      // quickMenu,
       githubSvg,
       homeSvg,
       infoSvg,
