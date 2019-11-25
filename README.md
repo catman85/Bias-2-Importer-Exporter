@@ -11,6 +11,7 @@
 [![GitHub forks](https://img.shields.io/github/forks/catman85/Bias-2-Importer-Exporter?color=blueviolet&style=for-the-badge)](https://github.com/catman85/Bias-2-Importer-Exporter/network)
 
 [![HitCount](http://hits.dwyl.io/catman85/Bias-2-Importer-Exporter.svg)](http://hits.dwyl.io/catman85/Bias-2-Importer-Exporter)
+[![Build Status](https://travis-ci.com/catman85/Bias-2-Importer-Exporter.svg?branch=master)](https://travis-ci.com/catman85/Bias-2-Importer-Exporter)
 
 ## An app that allows you to manage *Positive Grid's Bias Fx 2 presets*.
 ![ ](https://i.imgur.com/pOSXJjP.png)
