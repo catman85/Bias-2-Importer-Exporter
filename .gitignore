@@ -10,3 +10,4 @@ thumbs.db
 !.gitkeep
 !.electron-vue/*
 package-lock.json
+.idea/*
