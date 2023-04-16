@@ -173,11 +173,11 @@ export default {
         this.positiveGridPath + "/BIAS_FX2/GlobalPresets/" + bank.bank_folder
       );
       let presetJsonPathSelBank = this.nativePath(selBankPath + "/preset.json");
-      let dest = this.nativePath(selBankPath + "/" + newUUID);
+      let dest = this.nativePath(selBankPath + "/" + newUUID + "/");
 
       console.debug("Importing Preset... " + newUUID);
       console.debug("To json file ... " + presetJsonPathSelBank);
-      if (importType == this.importType.COPY) {
+      if (importType === this.importType.COPY) {
         console.debug("Copying from: " + path + " to " + dest);
         await this.copyFromTo(path, dest).catch((err) => {
           console.error("error from import preset");

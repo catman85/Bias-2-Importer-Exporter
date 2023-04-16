@@ -1,80 +1,57 @@
-// ATTENTION Remember that mutations have to be synchronous. Actions don't. 
+// ATTENTION Remember that mutations have to be synchronous. Actions don't.
 // We can perform asynchronous operations inside an action:
 
-
 // '@' is not recognized here
-import {
-  EventBus
-} from '../../plugins/event-bus';
+import { EventBus } from "../../plugins/event-bus";
 
 const state = {
-  isDirSet: false,
   dir: String,
   banks: Array,
-  selectedBankFolder: String
-}
+  selectedBankFolder: String,
+};
 
 const mutations = {
-  SET_DIR(state, {
-    dir
-  }) {
+  SET_DIR(state, { dir }) {
     // we do have access to state from here
-    // console.debug(state.dir)
     state.dir = dir;
-    if (dir == "") { // nothing selected
-      state.isDirSet = false;
-    } else {
-      state.isDirSet = true
-    }
     // refresh UI
-    EventBus.$emit('init');
+    EventBus.$emit("init");
   },
-  SET_BANKS(state, {
-    banks
-  }) { // not used
-    state.banks = banks
+  SET_BANKS(state, { banks }) {
+    // not used
+    state.banks = banks;
   },
-  SET_BANK(state, {
-    bankFolder
-  }) {
-
-    state.selectedBankFolder = bankFolder
+  SET_BANK(state, { bankFolder }) {
+    state.selectedBankFolder = bankFolder;
     // refresh UI
-    EventBus.$emit('init');
-  }
-
-}
+    EventBus.$emit("init");
+  },
+};
 
 const actions = {
-  setDir({
-    commit
-  }, payload) {
+  setDir({ commit }, payload) {
     // do something async
     // we don't have access to state from here
-    commit('SET_DIR', {
-      'dir': payload
-    })
+    commit("SET_DIR", {
+      dir: payload,
+    });
   },
-  setBanks({
-    commit
-  }, payload) {
-    commit('SET_BANKS', {
-      'banks': payload
-    })
+  setBanks({ commit }, payload) {
+    commit("SET_BANKS", {
+      banks: payload,
+    });
   },
-  setBank({
-    commit
-  }, payload) {
+  setBank({ commit }, payload) {
     // I can't make this work
     // https://stackoverflow.com/questions/42195971/how-can-i-get-response-of-this-store-dispatch-on-the-vue-js-2
-    commit('SET_BANK', {
-      'bankFolder': payload
-    })
-  }
-}
+    commit("SET_BANK", {
+      bankFolder: payload,
+    });
+  },
+};
 
 export default {
   state,
   actions,
-  mutations
-}
+  mutations,
+};

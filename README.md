@@ -15,6 +15,7 @@
 
 ## An app that allows you to manage *Positive Grid's Bias Fx 2 presets*.
 ![ ](https://i.imgur.com/pOSXJjP.png)
+![ ](https://i.imgur.com/96VdajB.jpg)
 
 
 ### Features:

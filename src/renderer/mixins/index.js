@@ -47,7 +47,6 @@ const myMixins = {
   computed: {
     // having global computed properties renders vuex store useless but whatever
     ...mapState({
-      isDirSet: (state) => state.Directory.isDirSet,
       selectedBankFolder: (state) => {
         if (!state.Directory.selectedBankFolder) {
           // return this default path the first time
@@ -58,7 +57,7 @@ const myMixins = {
       banksChild: (state) => state.Directory.banks,
     }),
     positiveGridPath: function () {
-      if (this.$store.state.Directory.isDirSet) {
+      if (this.$store.state.Directory.dir) {
         return this.$store.state.Directory.dir;
       } else {
         return this.nativePath(this.docPath + "/PositiveGrid");
@@ -94,8 +93,7 @@ const myMixins = {
       shell.openExternal(url);
     },
     showStateStuff() {
-      console.debug(this.$store.state.Directory.isDirSet);
-      if (this.$store.state.Directory.isDirSet) {
+      if (this.$store.state.Directory.dir) {
         console.debug(this.$store.state.Directory.dir);
       }
       console.debug(this.$store.state.Directory.selectedBankFolder);
