@@ -178,7 +178,6 @@ const myMixins = {
           overwrite: true,
         })
         .catch((err) => {
-          console.error("1");
           return this.errorExit(err);
         });
     },
@@ -187,7 +186,6 @@ const myMixins = {
         await fs.move(src, dest, {
           overwrite: true,
         });
-        console.log("success!");
       } catch (err) {
         return this.errorExit(err);
       }

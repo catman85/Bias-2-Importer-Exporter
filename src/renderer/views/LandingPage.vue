@@ -51,7 +51,7 @@ export default {
   mounted() {
     // you could use async computed properties instead
     this.init();
-
+    this.setDefaultBank();
     console.debug(this.selectedBankFolder);
 
     EventBus.$on("init", () => {
@@ -71,6 +71,13 @@ export default {
       );
       this.$store.dispatch("setBanks", this.banks); // for the dropdown
       this.presets = await this.getJson(this.presetJsonPath, "preset_name");
+    },
+    async setDefaultBank() {
+      if(!this.banks.length) return;
+      const selectedBank =
+        this.$store.state.Directory.selectedBankFolder ||
+        this.banks[0].bank_folder;
+      this.$store.dispatch("setBank", selectedBank);
     },
     async showNewNamePrompt(obj) {
       // figuring out the type of the object
